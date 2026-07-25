@@ -1,0 +1,251 @@
+/*
+ * ConSkins — "Graphite / Volt" trading platform design tokens.
+ * Near-black graphite surfaces with a volt-lime signature accent (CTA/buy),
+ * ice-blue for links & live data, ember for deals/price drops. CS2 rarity
+ * colors stay first-class tokens so traders read item cards instantly.
+ *
+ * Token NAMES are kept stable (aliased from the previous theme) so existing
+ * components keep working while the palette is fully re-skinned. Consumed by
+ * @theme in globals.css. Dark is the primary, default theme.
+ */
+
+/* ── DEFAULT (dark, graphite/volt) — primary theme ────────────────── */
+:root {
+  /* ── Brand ──────────────────────────────────────────────────────── */
+  --color-primary: #B4FF39;          /* volt lime — CTAs, buy */
+  --color-primary-hover: #C9FF6B;
+  --color-primary-tint: rgba(180, 255, 57, 0.12);
+  --color-primary-glow: rgba(180, 255, 57, 0.35);
+  --color-primary-fg: #0A0F04;       /* dark ink on volt */
+
+  --color-accent: #5AC8FF;           /* ice blue — links, live data */
+  --color-accent-hover: #82D7FF;
+  --color-accent-tint: rgba(90, 200, 255, 0.12);
+  --color-accent-fg: #041018;
+
+  --color-bronze: #FF5C38;           /* ember — deals, price drops */
+  --color-bronze-hover: #FF7A5C;
+  --color-bronze-tint: rgba(255, 92, 56, 0.14);
+
+  --color-teal: #3DDC97;             /* positive delta, in stock */
+  --color-teal-hover: #6BE7B2;
+  --color-teal-tint: rgba(61, 220, 151, 0.14);
+
+  --color-coral: #FF5C38;            /* deals → ember */
+  --color-coral-hover: #FF7A5C;
+  --color-coral-tint: rgba(255, 92, 56, 0.14);
+
+  --color-violet: #B4FF39;           /* legacy alias → volt */
+  --color-violet-hover: #C9FF6B;
+  --color-violet-tint: rgba(180, 255, 57, 0.12);
+
+  --color-secondary: #12151B;
+  --color-price: var(--color-text);
+  --color-cta: var(--color-primary);
+  --color-cta-hover: var(--color-primary-hover);
+  --color-header: #0A0B0F;
+  --color-header-secondary: #0D0F13;
+
+  --color-accent-light: var(--color-accent-tint);
+  --color-accent-2: var(--color-accent);
+  --color-accent-2-hover: var(--color-accent-hover);
+  --color-accent-3: var(--color-teal);
+  --color-accent-4: #9AA3B2;
+
+  /* ── Surfaces (graphite, 4 levels) ──────────────────────────────── */
+  --color-bg: #08090C;               /* page bg — graphite-950 */
+  --color-bg-elevated: #12151B;      /* cards, dialogs — surface-1 */
+  --color-bg-secondary: #0D0F13;     /* lifted section tint */
+  --color-bg-tertiary: #191D25;      /* muted panel, row hover — surface-2 */
+  --color-bg-warm: #0D0F13;
+  --color-bg-cool: #12151B;
+
+  /* ── Text ───────────────────────────────────────────────────────── */
+  --color-text: #F2F4F8;             /* near-white ink */
+  --color-text-secondary: #9AA3B2;   /* muted */
+  --color-text-tertiary: #5F6774;
+  --color-text-inverse: #08090C;
+
+  /* ── Lines ──────────────────────────────────────────────────────── */
+  --color-border: #20242E;
+  --color-border-hover: #2C3240;
+  --color-border-strong: #3A4150;
+  --color-hairline: rgba(255, 255, 255, 0.05);
+
+  /* ── Status ─────────────────────────────────────────────────────── */
+  --color-success: #3DDC97;
+  --color-success-light: rgba(61, 220, 151, 0.14);
+  --color-warning: #FF5C38;
+  --color-warning-light: rgba(255, 92, 56, 0.14);
+  --color-danger: #FF4D6D;           /* price down, errors */
+  --color-danger-light: rgba(255, 77, 109, 0.12);
+  --color-info: #5AC8FF;
+
+  /* ── CS2 rarity palette (first-class, canonical) ────────────────── */
+  --rarity-consumer: #b0c3d9;
+  --rarity-industrial: #5e98d9;
+  --rarity-milspec: #4b69ff;
+  --rarity-restricted: #8847ff;
+  --rarity-classified: #d32ce6;
+  --rarity-covert: #eb4b4b;
+  --rarity-gold: #ffd700;            /* knives / gloves (Extraordinary) */
+  --rarity-contraband: #e4ae39;
+
+  /* ── Wear / float gradient (FN → BS) ────────────────────────────── */
+  --wear-fn: #4ade80;
+  --wear-mw: #a3e635;
+  --wear-ft: #facc15;
+  --wear-ww: #fb923c;
+  --wear-bs: #ef4444;
+  --gradient-wear: linear-gradient(90deg, #4ade80 0%, #a3e635 20%, #facc15 45%, #fb923c 72%, #ef4444 100%);
+
+  /* ── Elevation — layered shadows + glow ─────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 28px 70px rgba(0, 0, 0, 0.65);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 18px 44px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(180, 255, 57, 0.14);
+  --shadow-accent: 0 10px 30px rgba(90, 200, 255, 0.24);
+  --shadow-warm: 0 10px 30px rgba(255, 92, 56, 0.24);
+  --shadow-glow-amber: 0 0 30px rgba(255, 92, 56, 0.38);
+  --shadow-glow-azure: 0 0 30px rgba(90, 200, 255, 0.4);
+  --shadow-glow-violet: 0 0 34px rgba(180, 255, 57, 0.35); /* legacy alias → volt */
+  --shadow-glow-volt: 0 0 34px rgba(180, 255, 57, 0.35);
+
+  /* ── Glass ──────────────────────────────────────────────────────── */
+  --glass-bg: rgba(18, 21, 27, 0.72);
+  --glass-blur: 16px;
+
+  /* ── Gradients ──────────────────────────────────────────────────── */
+  --gradient-primary: linear-gradient(135deg, #B4FF39 0%, #5AC8FF 100%);
+  --gradient-accent: linear-gradient(135deg, #5AC8FF 0%, #B4FF39 100%);
+  --gradient-warm: linear-gradient(180deg, #12151B 0%, #08090C 100%);
+  --gradient-cool: linear-gradient(180deg, #0D0F13 0%, #08090C 100%);
+  --gradient-hero: radial-gradient(1100px 560px at 15% -10%, rgba(180, 255, 57, 0.10) 0%, transparent 60%), radial-gradient(900px 500px at 90% 0%, rgba(90, 200, 255, 0.09) 0%, transparent 55%), linear-gradient(180deg, #0A0C10 0%, #08090C 100%);
+  --gradient-badge: linear-gradient(135deg, #B4FF39 0%, #5AC8FF 100%);
+  --gradient-mint: linear-gradient(135deg, rgba(61, 220, 151, 0.14) 0%, rgba(90, 200, 255, 0.10) 100%);
+  --gradient-sunset: linear-gradient(135deg, rgba(255, 92, 56, 0.14) 0%, rgba(180, 255, 57, 0.10) 100%);
+  --gradient-electric: linear-gradient(135deg, #B4FF39 0%, #5AC8FF 100%);
+  --gradient-card-hover: linear-gradient(180deg, rgba(180, 255, 57, 0.06) 0%, rgba(90, 200, 255, 0.04) 100%);
+  --gradient-terminal: linear-gradient(180deg, rgba(13, 15, 19, 0.9) 0%, rgba(8, 9, 12, 0.98) 100%);
+
+  /* ── Radii ──────────────────────────────────────────────────────── */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-pill: 9999px;
+
+  /* ── Layout ─────────────────────────────────────────────────────── */
+  --max-width: 1400px;
+  --header-height: 76px;
+  --announcement-height: 36px;
+
+  /* ── Type — expressive display + grotesk body + mono numerals ───── */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-unbounded), var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-unbounded), var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Promo tints ────────────────────────────────────────────────── */
+  --promo-bg-blue: rgba(90, 200, 255, 0.10);
+  --promo-bg-warm: rgba(255, 92, 56, 0.10);
+  --promo-bg-green: rgba(61, 220, 151, 0.10);
+  --promo-bg-purple: rgba(180, 255, 57, 0.10);
+  --promo-bg-pink: rgba(255, 77, 109, 0.10);
+
+  color-scheme: dark;
+}
+
+/* ── LIGHT-MODE OPT-IN — activated with .light or [data-theme="light"] ── */
+[data-theme="light"],
+.light {
+  --color-primary: #65A30D;          /* volt darkened for light bg */
+  --color-primary-hover: #4D7C0F;
+  --color-primary-tint: rgba(101, 163, 13, 0.10);
+  --color-primary-glow: rgba(101, 163, 13, 0.22);
+  --color-primary-fg: #FFFFFF;
+
+  --color-accent: #0284C7;
+  --color-accent-hover: #0369A1;
+  --color-accent-tint: rgba(2, 132, 199, 0.10);
+  --color-accent-fg: #FFFFFF;
+
+  --color-bronze: #EA580C;
+  --color-bronze-hover: #C2410C;
+  --color-bronze-tint: rgba(234, 88, 12, 0.10);
+
+  --color-teal: #059669;
+  --color-teal-hover: #047857;
+  --color-teal-tint: rgba(5, 150, 105, 0.12);
+
+  --color-coral: #EA580C;
+  --color-coral-hover: #C2410C;
+  --color-coral-tint: rgba(234, 88, 12, 0.12);
+
+  --color-violet: #65A30D;
+  --color-violet-hover: #4D7C0F;
+  --color-violet-tint: rgba(101, 163, 13, 0.10);
+
+  --color-secondary: #FFFFFF;
+  --color-price: var(--color-text);
+  --color-cta: var(--color-primary);
+  --color-cta-hover: var(--color-primary-hover);
+  --color-header: #FFFFFF;
+  --color-header-secondary: #F1F3F7;
+
+  --color-accent-light: var(--color-accent-tint);
+  --color-accent-2: var(--color-accent);
+  --color-accent-2-hover: var(--color-accent-hover);
+  --color-accent-3: var(--color-teal);
+  --color-accent-4: #4B5563;
+
+  --color-bg: #F7F8FB;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-secondary: #F1F3F7;
+  --color-bg-tertiary: #E7EAF0;
+  --color-bg-warm: #F1F3F7;
+  --color-bg-cool: #FFFFFF;
+
+  --color-text: #0B0D11;
+  --color-text-secondary: #4B5563;
+  --color-text-tertiary: #7A8290;
+  --color-text-inverse: #FFFFFF;
+
+  --color-border: #E2E6EE;
+  --color-border-hover: #CBD2DE;
+  --color-border-strong: #AEB7C6;
+  --color-hairline: rgba(11, 13, 17, 0.08);
+
+  --color-success: #059669;
+  --color-success-light: rgba(5, 150, 105, 0.12);
+  --color-warning: #EA580C;
+  --color-warning-light: rgba(234, 88, 12, 0.12);
+  --color-danger: #E11D48;
+  --color-danger-light: rgba(225, 29, 72, 0.10);
+  --color-info: #0284C7;
+
+  --shadow-sm: 0 1px 2px rgba(11, 13, 17, 0.05);
+  --shadow-md: 0 4px 14px rgba(11, 13, 17, 0.07);
+  --shadow-lg: 0 12px 32px rgba(11, 13, 17, 0.10);
+  --shadow-xl: 0 24px 60px rgba(11, 13, 17, 0.12);
+  --shadow-card: 0 1px 2px rgba(11, 13, 17, 0.05);
+  --shadow-card-hover: 0 14px 34px rgba(101, 163, 13, 0.16);
+  --shadow-accent: 0 10px 24px rgba(2, 132, 199, 0.18);
+  --shadow-warm: 0 10px 24px rgba(234, 88, 12, 0.16);
+  --shadow-glow-amber: 0 0 24px rgba(234, 88, 12, 0.24);
+  --shadow-glow-azure: 0 0 24px rgba(2, 132, 199, 0.24);
+  --shadow-glow-violet: 0 0 24px rgba(101, 163, 13, 0.26);
+  --shadow-glow-volt: 0 0 24px rgba(101, 163, 13, 0.26);
+
+  --glass-bg: rgba(255, 255, 255, 0.72);
+
+  --gradient-hero: radial-gradient(1000px 500px at 20% -10%, rgba(101, 163, 13, 0.10) 0%, transparent 60%), linear-gradient(180deg, #F7F8FB 0%, #EEF1F6 100%);
+
+  color-scheme: light;
+}
