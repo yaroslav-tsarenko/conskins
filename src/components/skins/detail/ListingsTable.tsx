@@ -2,7 +2,7 @@
 
 import { exteriorMeta } from "@/lib/skins/shared";
 import type { SkinListingView } from "@/lib/skins/queries";
-import { formatUSD } from "../SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export function ListingsTable({
   listings,
@@ -13,6 +13,7 @@ export function ListingsTable({
   selectedId: string;
   onSelect: (id: string) => void;
 }) {
+  const fmt = useSkinPrice();
   return (
     <div className="rounded-[var(--radius-xl)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] p-4">
       <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-[color:var(--color-text-tertiary)]">
@@ -56,7 +57,7 @@ export function ListingsTable({
                   </span>
                 )}
                 <span className="tnum font-mono text-sm font-bold text-[color:var(--color-text)]">
-                  {formatUSD(l.price)}
+                  {fmt(l.price)}
                 </span>
               </div>
             </button>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AlertCircle, Check, ExternalLink, Loader2, Lock, X } from "lucide-react";
-import { formatUSD } from "./SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export type PurchaseState = "anon" | "no-steam" | "no-trade-url" | "ready";
 
@@ -34,6 +34,7 @@ export function TradeSetupModal({
   listingId: string;
   next: string;
 }) {
+  const fmt = useSkinPrice();
   const [state, setState] = useState<PurchaseState>(initialState);
   const [tradeUrl, setTradeUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -254,7 +255,7 @@ export function TradeSetupModal({
                   </div>
                   <div className="flex items-center justify-between py-0.5 text-sm">
                     <span className="text-[color:var(--color-text-secondary)]">Item price</span>
-                    <span className="tnum text-[color:var(--color-text)]">{formatUSD(fees.itemPrice)}</span>
+                    <span className="tnum text-[color:var(--color-text)]">{fmt(fees.itemPrice)}</span>
                   </div>
                   <div className="flex items-center justify-between py-0.5 text-sm">
                     <span className="text-[color:var(--color-text-secondary)]">Buyer protection</span>
@@ -262,7 +263,7 @@ export function TradeSetupModal({
                   </div>
                   <div className="mt-2 flex items-center justify-between border-t border-[color:var(--color-border)] pt-2 text-sm">
                     <span className="font-semibold text-[color:var(--color-text)]">Total</span>
-                    <span className="tnum font-bold text-[color:var(--color-text)]">{formatUSD(fees.total)}</span>
+                    <span className="tnum font-bold text-[color:var(--color-text)]">{fmt(fees.total)}</span>
                   </div>
                 </div>
 

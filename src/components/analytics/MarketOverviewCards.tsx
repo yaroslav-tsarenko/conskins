@@ -1,5 +1,6 @@
 import { Activity, Layers, Percent, TrendingUp } from "lucide-react";
 import type { MarketStats } from "@/lib/skins/queries";
+import { SkinPriceCountUp } from "@/components/shared/SkinPrice";
 
 const CARDS = [
   {
@@ -20,7 +21,7 @@ const CARDS = [
   {
     icon: Activity,
     label: "Market value",
-    value: (s: MarketStats) => `$${Math.round(s.marketValue).toLocaleString()}`,
+    value: (s: MarketStats) => <SkinPriceCountUp usd={s.marketValue} decimals={0} />,
   },
 ];
 

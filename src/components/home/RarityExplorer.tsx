@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { motion } from "framer-motion";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import { ArrowRight } from "lucide-react";
 import type { RarityBucket } from "@/lib/skins/queries";
 
@@ -108,7 +109,7 @@ export function RarityExplorer({ buckets }: { buckets: RarityBucket[] }) {
             </div>
             <div>
               <div className="spec-value text-3xl font-extrabold text-[color:var(--color-accent)]">
-                {current.fromPrice != null ? `$${current.fromPrice.toFixed(2)}` : "—"}
+                {current.fromPrice != null ? <SkinPrice usd={current.fromPrice} /> : "—"}
               </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-text-tertiary)]">
                 From

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, Swords } from "lucide-react";
-import { CountUp } from "./CountUp";
+import { SkinPrice, SkinPriceCountUp } from "@/components/shared/SkinPrice";
 import type { CatalogItem } from "@/lib/skins/queries";
 
 const SLOT_LABELS = ["Knife", "Gloves", "Rifle", "Pistol"];
@@ -43,11 +43,8 @@ export function LoadoutTeaser({ slots }: { slots: (CatalogItem | undefined)[] })
                 <div className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--color-text-tertiary)]">
                   This setup
                 </div>
-                <CountUp
-                  value={total}
-                  decimals={2}
-                  prefix="$"
-                  suffix=""
+                <SkinPriceCountUp
+                  usd={total}
                   className="font-mono text-lg font-bold tabular-nums text-[color:var(--color-primary)]"
                 />
               </div>
@@ -81,7 +78,7 @@ export function LoadoutTeaser({ slots }: { slots: (CatalogItem | undefined)[] })
                 </div>
                 {item && (
                   <div className="tnum mt-2 font-mono text-[11.5px] font-bold text-[color:var(--color-primary)]">
-                    ${item.price.toFixed(2)}
+                    <SkinPrice usd={item.price} />
                   </div>
                 )}
               </div>

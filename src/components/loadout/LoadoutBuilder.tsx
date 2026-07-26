@@ -6,7 +6,8 @@ import { Link } from "@/i18n/routing";
 import { Modal } from "@/components/ui/Modal";
 import { CountUp } from "@/components/home/CountUp";
 import type { CatalogItem, CatalogResult } from "@/lib/skins/queries";
-import { formatUSD } from "@/components/skins/SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
+import { useCurrency } from "@/providers/CurrencyProvider";
 
 const STORAGE_KEY = "conskins:loadout:v1";
 
@@ -57,6 +58,8 @@ function loadStored(): Loadout {
 }
 
 export function LoadoutBuilder() {
+  const fmt = useSkinPrice();
+  const { symbol, convertFrom } = useCurrency();
   const [side, setSide] = useState<Side>("t");
   const [loadout, setLoadout] = useState<Loadout>(EMPTY);
   const [ready, setReady] = useState(false);
@@ -127,7 +130,7 @@ export function LoadoutBuilder() {
             </div>
             <div className="tnum font-display text-xl font-extrabold text-[color:var(--color-primary)]">
               {ready ? (
-                <CountUp value={totals.value} decimals={2} prefix="$" duration={600} />
+                <CountUp value={convertFrom(totals.value, "USD")} decimals={2} prefix={symbol} duration={600} />
               ) : (
                 "—"
               )}
@@ -199,7 +202,7 @@ export function LoadoutBuilder() {
                       {item.name.replace(/^(StatTrak™ |Souvenir )/, "")}
                     </div>
                     <div className="tnum mt-0.5 font-mono text-[12px] text-[color:var(--color-text-secondary)]">
-                      {formatUSD(item.price)}
+                      {fmt(item.price)}
                       {item.float != null && ` · ${item.float.toFixed(4)}`}
                     </div>
                   </button>
@@ -248,6 +251,7 @@ function SlotPickerModal({
   onClose: () => void;
   onPick: (item: SlotItem) => void;
 }) {
+  const fmt = useSkinPrice();
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -333,7 +337,7 @@ function SlotPickerModal({
                   {it.name.replace(/^(StatTrak™ |Souvenir )/, "")}
                 </div>
                 <div className="tnum font-mono text-[11px] text-[color:var(--color-text-secondary)]">
-                  {formatUSD(it.price)}
+                  {fmt(it.price)}
                 </div>
               </button>
             ))}

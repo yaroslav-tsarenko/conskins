@@ -14,6 +14,7 @@ interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   convert: (amountInEur: number) => number;
+  convertFrom: (amount: number, from: Currency) => number;
   symbol: string;
   rates: Rates;
 }
@@ -66,9 +67,18 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     [currency, rates]
   );
 
+  const convertFrom = useCallback(
+    (amount: number, from: Currency) => {
+      if (from === currency) return amount;
+      const amountInEur = amount / rates[from];
+      return Math.round(amountInEur * rates[currency] * 100) / 100;
+    },
+    [currency, rates]
+  );
+
   return (
     <CurrencyContext.Provider
-      value={{ currency, setCurrency, convert, rates, symbol: SYMBOLS[currency] }}
+      value={{ currency, setCurrency, convert, convertFrom, rates, symbol: SYMBOLS[currency] }}
     >
       {children}
     </CurrencyContext.Provider>

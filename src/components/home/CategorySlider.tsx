@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "@/i18n/routing";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CategoryShowcaseEntry } from "@/lib/skins/queries";
 
@@ -125,7 +126,7 @@ export function CategorySlider({ entries }: { entries: CategoryShowcaseEntry[] }
               </div>
               {e.fromPrice != null && (
                 <span className="tnum rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-bg)]/70 px-2.5 py-1 font-mono text-[11px] font-bold text-[color:var(--color-primary)] backdrop-blur">
-                  from ${e.fromPrice.toFixed(2)}
+                  from <SkinPrice usd={e.fromPrice} />
                 </span>
               )}
             </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, FolderOpen, Sparkles } from "lucide-react";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import { getCollections } from "@/lib/skins/queries";
 import { brand } from "@/lib/brand";
 
@@ -107,7 +108,7 @@ export default async function CollectionsPage() {
                 {c.fromPrice != null && (
                   <>
                     {" · "}
-                    <span className="tnum font-mono">from ${c.fromPrice.toFixed(2)}</span>
+                    <span className="tnum font-mono">from <SkinPrice usd={c.fromPrice} /></span>
                   </>
                 )}
               </div>

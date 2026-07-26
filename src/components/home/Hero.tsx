@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, ShieldCheck, Wallet, Zap, TrendingUp, Users, Repeat, Layers } from "lucide-react";
 import { CountUp } from "./CountUp";
+import { SkinPrice, SkinPriceCountUp } from "@/components/shared/SkinPrice";
 import type { MarketStats, CatalogItem } from "@/lib/skins/queries";
 
 export interface FeaturedSkinView {
@@ -49,7 +50,7 @@ function FloatingCard({ item, pose }: { item: CatalogItem; pose: string }) {
           </span>
         </span>
         <span className="tnum shrink-0 font-mono text-[12px] font-bold text-[color:var(--color-primary)]">
-          ${item.price.toFixed(2)}
+          <SkinPrice usd={item.price} />
         </span>
       </div>
     </Link>
@@ -103,7 +104,7 @@ export function TrendingSkinCard({ featured }: { featured: FeaturedSkinView }) {
         <div className="shrink-0 text-right">
           {featured.lowestPrice != null && (
             <div className="tnum font-mono text-lg font-bold text-[color:var(--color-primary)]">
-              ${featured.lowestPrice.toFixed(2)}
+              <SkinPrice usd={featured.lowestPrice} />
             </div>
           )}
           <span className="mt-0.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-[color:var(--color-accent)] group-hover:underline">
@@ -129,7 +130,7 @@ export function Hero({
     { icon: Layers, label: "Skins available", value: stats.totalListings, decimals: 0, prefix: "", suffix: "+" },
     { icon: Repeat, label: "Daily transactions", value: dailyTx, decimals: 0, prefix: "", suffix: "" },
     { icon: Users, label: "Active users", value: activeUsers, decimals: 0, prefix: "", suffix: "" },
-    { icon: TrendingUp, label: "Market volume", value: Math.round(stats.marketValue), decimals: 0, prefix: "$", suffix: "" },
+    { icon: TrendingUp, label: "Market volume", value: Math.round(stats.marketValue), decimals: 0, prefix: "$", suffix: "", usd: true },
   ];
 
   return (
@@ -196,13 +197,21 @@ export function Hero({
               <s.icon size={17} />
             </span>
             <div>
-              <CountUp
-                value={s.value}
-                decimals={s.decimals}
-                prefix={s.prefix}
-                suffix={s.suffix}
-                className="font-mono text-xl font-bold tabular-nums leading-none text-[color:var(--color-text)]"
-              />
+              {"usd" in s && s.usd ? (
+                <SkinPriceCountUp
+                  usd={s.value}
+                  decimals={0}
+                  className="font-mono text-xl font-bold tabular-nums leading-none text-[color:var(--color-text)]"
+                />
+              ) : (
+                <CountUp
+                  value={s.value}
+                  decimals={s.decimals}
+                  prefix={s.prefix}
+                  suffix={s.suffix}
+                  className="font-mono text-xl font-bold tabular-nums leading-none text-[color:var(--color-text)]"
+                />
+              )}
               <div className="mt-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text-tertiary)]">
                 {s.label}
               </div>

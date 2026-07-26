@@ -1,9 +1,10 @@
 "use client";
 
 import type { MarketQuote } from "@/lib/skins/pricing";
-import { formatUSD } from "../SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export function MarketComparison({ markets }: { markets: MarketQuote[] }) {
+  const fmt = useSkinPrice();
   const bestPrice = markets.length ? markets[0].price : null;
 
   return (
@@ -33,7 +34,7 @@ export function MarketComparison({ markets }: { markets: MarketQuote[] }) {
                 )}
               </span>
               <span className="tnum font-mono font-semibold text-[color:var(--color-text)]">
-                {formatUSD(m.price)}
+                {fmt(m.price)}
               </span>
             </div>
           );

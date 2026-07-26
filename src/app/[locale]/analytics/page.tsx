@@ -91,7 +91,8 @@ export default async function AnalyticsPage({
       weapon: skin.weapon,
       imageUrl: skin.imageUrl,
       rarityColor: skin.rarityColor,
-      value: `$${Number(skin.lowestPrice ?? 0).toFixed(2)}`,
+      value: "",
+      priceUsd: Number(skin.lowestPrice ?? 0),
       delta: `${change >= 0 ? "▲" : "▼"} ${Math.abs(change).toFixed(1)}%`,
       deltaTone: change >= 0 ? ("up" as const) : ("down" as const),
     }));
@@ -111,7 +112,8 @@ export default async function AnalyticsPage({
     weapon: it.weapon,
     imageUrl: it.imageUrl,
     rarityColor: it.rarityColor,
-    value: `$${it.price.toFixed(2)}`,
+    value: "",
+    priceUsd: it.price,
     delta: it.discountPct != null ? `−${Math.round(it.discountPct)}% vs Steam` : undefined,
     deltaTone: "up" as const,
   }));

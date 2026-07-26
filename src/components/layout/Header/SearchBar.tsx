@@ -47,7 +47,7 @@ interface SearchBarProps {
  */
 export function SearchBar({ variant, onNavigate }: SearchBarProps) {
   const router = useRouter();
-  const { symbol } = useCurrency();
+  const { symbol, convertFrom } = useCurrency();
 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SkinSuggestion[]>([]);
@@ -210,7 +210,7 @@ export function SearchBar({ variant, onNavigate }: SearchBarProps) {
                     {s.lowestPrice != null && (
                       <span className="shrink-0 font-mono text-[12px] font-bold tabular-nums text-[color:var(--color-primary)]">
                         {symbol}
-                        {s.lowestPrice.toFixed(2)}
+                        {convertFrom(s.lowestPrice, "USD").toFixed(2)}
                       </span>
                     )}
                   </button>

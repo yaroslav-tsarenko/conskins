@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/routing";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Repeat, ArrowRight } from "lucide-react";
@@ -99,7 +100,7 @@ export default async function TradesPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <span className="font-mono text-sm font-bold tabular-nums text-[color:var(--color-text)]">
-                    ${Number(p.price).toFixed(2)}
+                    <SkinPrice usd={Number(p.price)} />
                   </span>
                   <span
                     className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${

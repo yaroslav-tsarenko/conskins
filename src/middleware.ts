@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
     if (pathname.startsWith("/admin")) {
       if (!payload) {
-        return NextResponse.redirect(new URL("/en/auth/login", request.url));
+        return NextResponse.redirect(new URL("/auth/login", request.url));
       }
     }
 

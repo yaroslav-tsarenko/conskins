@@ -19,7 +19,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { useFavorites } from "@/providers/FavoritesProvider";
 import { CurrencySwitcher } from "./CurrencySwitcher";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const ACCOUNT_LINKS = [
   { href: "/account", icon: UserIcon, label: "Profile" },
@@ -62,11 +61,9 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-1.5">
-      {/* Currency / language */}
+      {/* Currency */}
       <div className="hidden items-center gap-0.5 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-1 py-1 md:flex">
         <CurrencySwitcher />
-        <span className="h-4 w-px bg-[color:var(--color-border)]" />
-        <LanguageSwitcher />
       </div>
 
       {/* Favorites */}

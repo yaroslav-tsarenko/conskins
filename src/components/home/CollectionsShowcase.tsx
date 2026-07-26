@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { Layers } from "lucide-react";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import type { CollectionSummary } from "@/lib/skins/queries";
 
 export function CollectionsShowcase({ collections }: { collections: CollectionSummary[] }) {
@@ -30,7 +31,12 @@ export function CollectionsShowcase({ collections }: { collections: CollectionSu
             </span>
             <span className="mt-0.5 block font-mono text-[10.5px] uppercase tracking-[0.12em] text-[color:var(--color-text-tertiary)]">
               {c.count.toLocaleString()} skins
-              {c.fromPrice != null && ` · from $${c.fromPrice.toFixed(2)}`}
+              {c.fromPrice != null && (
+                <>
+                  {" · from "}
+                  <SkinPrice usd={c.fromPrice} />
+                </>
+              )}
             </span>
           </span>
         </Link>

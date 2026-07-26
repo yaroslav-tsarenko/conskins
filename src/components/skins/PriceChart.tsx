@@ -10,7 +10,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatUSD } from "./SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
+import { useCurrency } from "@/providers/CurrencyProvider";
 
 export interface PricePoint {
   date: string;
@@ -26,6 +27,8 @@ const RANGES = [
 ] as const;
 
 export function PriceChart({ history }: { history: PricePoint[] }) {
+  const fmt = useSkinPrice();
+  const { symbol, convertFrom } = useCurrency();
   const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("30d");
 
   const data = useMemo(() => {
@@ -58,7 +61,7 @@ export function PriceChart({ history }: { history: PricePoint[] }) {
           {stats && (
             <div className="mt-1 flex items-baseline gap-2">
               <span className="tnum font-display text-xl font-bold text-[color:var(--color-text)]">
-                {formatUSD(stats.last)}
+                {fmt(stats.last)}
               </span>
               <span className={`tnum text-sm font-semibold ${up ? "text-[color:var(--color-success)]" : "text-[color:var(--color-danger)]"}`}>
                 {up ? "▲" : "▼"} {Math.abs(stats.changePct).toFixed(1)}%
@@ -106,7 +109,10 @@ export function PriceChart({ history }: { history: PricePoint[] }) {
               tickLine={false}
               axisLine={false}
               width={48}
-              tickFormatter={(v: number) => `$${v < 1 ? v.toFixed(2) : Math.round(v)}`}
+              tickFormatter={(v: number) => {
+                const c = convertFrom(v, "USD");
+                return `${symbol}${c < 1 ? c.toFixed(2) : Math.round(c)}`;
+              }}
               domain={["auto", "auto"]}
             />
             <Tooltip
@@ -117,7 +123,7 @@ export function PriceChart({ history }: { history: PricePoint[] }) {
                 fontSize: 12,
               }}
               labelStyle={{ color: "var(--color-text-secondary)" }}
-              formatter={(value) => [formatUSD(Number(value)), "Price"]}
+              formatter={(value) => [fmt(Number(value)), "Price"]}
             />
             <Area
               type="monotone"
@@ -132,8 +138,8 @@ export function PriceChart({ history }: { history: PricePoint[] }) {
 
       {stats && (
         <div className="mt-4 grid grid-cols-3 gap-3 border-t border-[color:var(--color-border)] pt-4">
-          <Stat label="Low" value={formatUSD(stats.min)} />
-          <Stat label="High" value={formatUSD(stats.max)} />
+          <Stat label="Low" value={fmt(stats.min)} />
+          <Stat label="High" value={fmt(stats.max)} />
           <Stat label="Volume" value={stats.volume.toLocaleString()} />
         </div>
       )}

@@ -38,7 +38,7 @@ export function LiveMarketTerminal({ initial }: { initial: RecentSale[] }) {
     return () => window.clearInterval(id);
   }, [initial.length]);
 
-  const { symbol } = useCurrency();
+  const { symbol, convertFrom } = useCurrency();
 
   if (rows.length === 0) return null;
 
@@ -80,7 +80,7 @@ export function LiveMarketTerminal({ initial }: { initial: RecentSale[] }) {
               <span className="shrink-0 text-right">
                 <span className="block font-mono text-[12.5px] font-bold tabular-nums text-[color:var(--color-primary)]">
                   {symbol}
-                  {s.price.toFixed(2)}
+                  {convertFrom(s.price, "USD").toFixed(2)}
                 </span>
                 <span className="block font-mono text-[9.5px] uppercase tracking-[0.1em] text-[color:var(--color-text-tertiary)]">
                   {agoLabel(s.soldAgoSec)}

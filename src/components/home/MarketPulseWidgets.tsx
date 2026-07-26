@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/routing";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import type { PricePoint } from "@/lib/skins/pricing";
 
 export interface PulseEntry {
@@ -53,7 +54,7 @@ export function MarketPulseWidgets({ entries }: { entries: PulseEntry[] }) {
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <span className="font-mono text-[13px] font-bold tabular-nums text-[color:var(--color-text)]">
-                  ${e.price.toFixed(2)}
+                  <SkinPrice usd={e.price} />
                 </span>
                 <span
                   className={[

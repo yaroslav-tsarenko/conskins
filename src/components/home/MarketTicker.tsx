@@ -2,6 +2,7 @@
 
 import { Link } from "@/i18n/routing";
 import { TrendingDown } from "lucide-react";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import type { TickerListing } from "@/lib/skins/queries";
 
 // Continuously scrolling strip of the newest listings. The list is rendered
@@ -46,7 +47,7 @@ export function MarketTicker({ items }: { items: TickerListing[] }) {
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="spec-value text-[13px] font-bold text-[color:var(--color-accent)]">
-                  ${item.price.toFixed(2)}
+                  <SkinPrice usd={item.price} />
                 </span>
                 {item.discountPct != null && item.discountPct > 0 && (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-[color:var(--color-success)]/15 px-1.5 py-0.5 text-[10px] font-bold text-[color:var(--color-success)]">

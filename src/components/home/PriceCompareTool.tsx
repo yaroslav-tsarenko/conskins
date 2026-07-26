@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
+import { SkinPrice, useSkinPrice } from "@/components/shared/SkinPrice";
 import { ArrowRight, Scale, Search, X } from "lucide-react";
 import type { CatalogItem } from "@/lib/skins/queries";
 
@@ -150,7 +151,7 @@ function SkinPicker({
                 </span>
                 {s.lowestPrice != null && (
                   <span className="tnum shrink-0 font-mono text-[11.5px] font-bold text-[color:var(--color-primary)]">
-                    ${s.lowestPrice.toFixed(2)}
+                    <SkinPrice usd={s.lowestPrice} />
                   </span>
                 )}
               </button>
@@ -169,14 +170,14 @@ type MetricRow = {
   winner: 0 | 1 | -1;
 };
 
-function buildRows(a: CompareData, b: CompareData): MetricRow[] {
+function buildRows(a: CompareData, b: CompareData, fmt: (usd: number) => string): MetricRow[] {
   const trend = (d: CompareData) =>
     d.change30d == null ? "—" : `${d.change30d >= 0 ? "▲" : "▼"} ${Math.abs(d.change30d).toFixed(1)}%`;
   return [
     {
       label: "Lowest price",
-      a: `$${a.item.price.toFixed(2)}`,
-      b: `$${b.item.price.toFixed(2)}`,
+      a: fmt(a.item.price),
+      b: fmt(b.item.price),
       winner: a.item.price === b.item.price ? -1 : a.item.price < b.item.price ? 0 : 1,
     },
     {
@@ -245,6 +246,7 @@ async function loadCompareData(skinId: string): Promise<CompareData | null> {
 }
 
 export function PriceCompareTool() {
+  const fmtPrice = useSkinPrice();
   const [a, setA] = useState<CompareData | null>(null);
   const [b, setB] = useState<CompareData | null>(null);
   const [loading, setLoading] = useState<"A" | "B" | null>(null);
@@ -258,7 +260,7 @@ export function PriceCompareTool() {
       .finally(() => setLoading(null));
   };
 
-  const rows = a && b ? buildRows(a, b) : null;
+  const rows = a && b ? buildRows(a, b, fmtPrice) : null;
 
   return (
     <div className="overflow-hidden rounded-[var(--radius-2xl)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] p-5 sm:p-7">

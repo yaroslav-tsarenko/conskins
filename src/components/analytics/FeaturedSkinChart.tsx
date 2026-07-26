@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Search } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 import type { PricePoint } from "@/lib/skins/pricing";
 import { PriceChart } from "../skins/PriceChart";
 
@@ -117,7 +118,7 @@ export function FeaturedSkinChart({
                     <span className="min-w-0 flex-1 truncate text-[13px]">{s.name}</span>
                     {s.lowestPrice != null && (
                       <span className="tnum shrink-0 font-mono text-[12px] text-[color:var(--color-text-secondary)]">
-                        ${s.lowestPrice.toFixed(2)}
+                        <SkinPrice usd={s.lowestPrice} />
                       </span>
                     )}
                   </button>

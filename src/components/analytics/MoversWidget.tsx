@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/routing";
+import { SkinPrice } from "@/components/shared/SkinPrice";
 
 export interface MoverEntry {
   id: string;
@@ -7,6 +8,7 @@ export interface MoverEntry {
   imageUrl: string | null;
   rarityColor: string;
   value: string;
+  priceUsd?: number;
   delta?: string;
   deltaTone?: "up" | "down" | "neutral";
 }
@@ -47,7 +49,7 @@ export function MoversWidget({ title, entries }: { title: string; entries: Mover
             </div>
             <div className="shrink-0 text-right">
               <div className="tnum font-mono text-[13px] font-bold text-[color:var(--color-text)]">
-                {e.value}
+                {e.priceUsd != null ? <SkinPrice usd={e.priceUsd} /> : e.value}
               </div>
               {e.delta && (
                 <div className={`tnum font-mono text-[11px] font-semibold ${TONE[e.deltaTone ?? "neutral"]}`}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
@@ -59,13 +59,14 @@ const INPUT_PLAIN_CLASS =
 
 export default function RegisterPage() {
   const t = useTranslations("auth");
-  const locale = useLocale();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initialForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
 
   const strength = getPasswordStrength(form.password);
 
@@ -101,6 +102,11 @@ export default function RegisterPage() {
       if (!form.password) errs.password = "Password is required";
       else if (form.password.length < 6) errs.password = "Min 6 characters";
       if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match";
+      if (!agreeTerms) {
+        setTermsError(true);
+        setErrors(errs);
+        return false;
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -136,7 +142,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Registration failed");
       toast.success("Account created!");
-      window.location.href = `/${locale}/account`;
+      window.location.href = "/account";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
@@ -501,11 +507,35 @@ export default function RegisterPage() {
                   {renderError("confirmPassword")}
                 </div>
 
-                <p className="text-[13px] leading-relaxed text-[color:var(--color-text-tertiary)]">
-                  By creating an account, you agree to our{" "}
-                  <Link href="/policies/terms" className="text-[color:var(--color-accent)] hover:underline">Terms of Service</Link> and{" "}
-                  <Link href="/policies/privacy" className="text-[color:var(--color-accent)] hover:underline">Privacy Policy</Link>.
-                </p>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                      termsError
+                        ? "border-[color:var(--color-danger)]"
+                        : "border-[color:var(--color-line)] hover:border-[color:var(--color-primary)]/50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={agreeTerms}
+                      onChange={(e) => {
+                        setAgreeTerms(e.target.checked);
+                        if (e.target.checked) setTermsError(false);
+                      }}
+                      className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[color:var(--color-primary)]"
+                    />
+                    <span className="text-[13px] leading-relaxed text-[color:var(--color-text-secondary)]">
+                      I agree to the{" "}
+                      <Link href="/policies/terms" className="text-[color:var(--color-accent)] hover:underline" onClick={(e) => e.stopPropagation()}>Terms of Service</Link> and{" "}
+                      <Link href="/policies/privacy" className="text-[color:var(--color-accent)] hover:underline" onClick={(e) => e.stopPropagation()}>Privacy Policy</Link>. *
+                    </span>
+                  </label>
+                  {termsError && (
+                    <span className="text-xs text-[color:var(--color-danger)]">
+                      You must accept the Terms of Service and Privacy Policy to create an account
+                    </span>
+                  )}
+                </div>
 
                 <div className="mt-1 flex gap-3">
                   <Button type="button" variant="bordered" onPress={goBack} startContent={<ChevronLeft size={16} />}>

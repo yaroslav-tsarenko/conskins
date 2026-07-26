@@ -32,7 +32,7 @@ export const brand = {
     email: companyEmail,
     emailB2B: companyEmail,
     emailHref: `mailto:${companyEmail}`,
-    contactPage: "/en/contact",
+    contactPage: "/contact",
   },
 
   social: {

@@ -6,17 +6,10 @@ import { exteriorMeta } from "@/lib/skins/shared";
 import type { CatalogItem } from "@/lib/skins/queries";
 import { useFavorites } from "@/providers/FavoritesProvider";
 import { useCompare } from "@/providers/CompareProvider";
-
-export function formatUSD(n: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n);
-}
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export function SkinCard({ item, locale = "en" }: { item: CatalogItem; locale?: string }) {
+  const fmt = useSkinPrice();
   const ext = exteriorMeta(item.exterior);
   const href = `/${locale}/skin/${item.skinId}?listing=${item.listingId}`;
   const { ready, isFavorite, toggle: toggleFavorite } = useFavorites();
@@ -169,11 +162,11 @@ export function SkinCard({ item, locale = "en" }: { item: CatalogItem; locale?: 
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <div className="flex flex-col">
             <span className="tnum font-mono text-base font-bold text-[color:var(--color-text)]">
-              {formatUSD(item.price)}
+              {fmt(item.price)}
             </span>
             {item.steamPrice != null && item.discountPct != null && item.discountPct > 0 && (
               <span className="tnum text-[11px] text-[color:var(--color-text-tertiary)] line-through">
-                {formatUSD(item.steamPrice)}
+                {fmt(item.steamPrice)}
               </span>
             )}
           </div>

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import type { SkinPageData } from "@/lib/skins/queries";
 import type { PricePoint } from "@/lib/skins/pricing";
-import { formatUSD } from "../SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 interface CompareSide {
   skin: SkinPageData;
@@ -19,6 +19,7 @@ function change30d(history: PricePoint[]): number {
 }
 
 export function CompareView({ a, b }: { a: CompareSide; b: CompareSide }) {
+  const fmt = useSkinPrice();
   return (
     <div className="mx-auto w-full max-w-[var(--max-width)] px-4 py-6">
       <div className="mb-6 flex items-center justify-between gap-3">
@@ -71,7 +72,7 @@ export function CompareView({ a, b }: { a: CompareSide; b: CompareSide }) {
                   </h2>
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                  <Row label="Best price" value={best ? formatUSD(best.price) : "—"} strong />
+                  <Row label="Best price" value={best ? fmt(best.price) : "—"} strong />
                   <Row
                     label="30d change"
                     value={`${up ? "▲" : "▼"} ${Math.abs(chg).toFixed(1)}%`}
@@ -96,7 +97,7 @@ export function CompareView({ a, b }: { a: CompareSide; b: CompareSide }) {
                   <Row label="Offers" value={String(skin.listings.length)} mono />
                   <Row
                     label="Steam price"
-                    value={best?.steamPrice != null ? formatUSD(best.steamPrice) : "—"}
+                    value={best?.steamPrice != null ? fmt(best.steamPrice) : "—"}
                     mono
                   />
                 </div>

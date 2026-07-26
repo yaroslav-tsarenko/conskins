@@ -8,7 +8,7 @@ import type { SkinPageData } from "@/lib/skins/queries";
 import type { MarketQuote, PricePoint } from "@/lib/skins/pricing";
 import { PriceChart } from "../PriceChart";
 import { TradeSetupModal, type PurchaseState } from "../TradeSetupModal";
-import { formatUSD } from "../SkinCard";
+import { useSkinPrice } from "@/components/shared/SkinPrice";
 import { SkinShowcase } from "./SkinShowcase";
 import { FloatVisualizer } from "./FloatVisualizer";
 import { PatternInfo } from "./PatternInfo";
@@ -33,6 +33,7 @@ export function SkinDetailClient({
   initialListingId?: string;
   purchaseState: PurchaseState;
 }) {
+  const fmt = useSkinPrice();
   const [selectedId, setSelectedId] = useState(
     (initialListingId && skin.listings.some((l) => l.id === initialListingId)
       ? initialListingId
@@ -146,14 +147,14 @@ export function SkinDetailClient({
             <div className="flex items-end justify-between gap-3">
               <div>
                 <div className="tnum font-display text-3xl font-bold text-[color:var(--color-text)]">
-                  {selected ? formatUSD(selected.price) : "—"}
+                  {selected ? fmt(selected.price) : "—"}
                 </div>
                 {selected?.steamPrice != null &&
                   selected.discountPct != null &&
                   selected.discountPct > 0 && (
                     <div className="mt-0.5 flex items-center gap-2">
                       <span className="tnum text-sm text-[color:var(--color-text-tertiary)] line-through">
-                        {formatUSD(selected.steamPrice)}
+                        {fmt(selected.steamPrice)}
                       </span>
                       <span className="tnum rounded bg-[color:var(--color-success)] px-1.5 py-0.5 text-[11px] font-bold text-black">
                         −{Math.round(selected.discountPct)}%
@@ -222,7 +223,7 @@ export function SkinDetailClient({
           initialState={purchaseState}
           locale={locale}
           skinName={displayName}
-          price={formatUSD(selected.price)}
+          price={fmt(selected.price)}
           priceValue={selected.price}
           listingId={selected.id}
           next={`/${locale}/skin/${skin.id}?listing=${selected.id}`}
