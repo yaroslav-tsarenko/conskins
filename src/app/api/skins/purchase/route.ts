@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json(
-      { code: "unauthenticated", error: "Sign in through Steam to buy." },
+      { code: "unauthenticated", error: "Sign in to buy." },
       { status: 401 },
     );
   }

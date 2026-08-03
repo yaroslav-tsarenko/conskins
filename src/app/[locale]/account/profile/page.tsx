@@ -31,6 +31,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [steam, setSteam] = useState<MeSteam | null>(null);
   const [hasPassword, setHasPassword] = useState(true);
+  const [email, setEmail] = useState("");
+  const [hasEmail, setHasEmail] = useState(true);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -44,6 +46,8 @@ export default function ProfilePage() {
           reset({ name: data.user.name || "", phone: data.user.phone || "" });
           setSteam(data.user.steam ?? null);
           setHasPassword(Boolean(data.user.hasPassword));
+          setEmail(data.user.email || "");
+          setHasEmail(Boolean(data.user.email));
         }
       });
   };
@@ -57,17 +61,28 @@ export default function ProfilePage() {
     const s = searchParams.get("steam");
     if (s === "linked") toast.success("Steam account linked.");
     else if (s === "taken") toast.error("That Steam account is already linked to another user.");
+    else if (s === "already") toast.error("Your account is already linked to a different Steam account.");
   }, [searchParams]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setLoading(true);
     try {
-      await fetch("/api/auth/sync-user", {
+      const res = await fetch("/api/account/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: user?.id, email: user?.email, name: data.name }),
+        body: JSON.stringify({
+          name: data.name,
+          phone: data.phone,
+          ...(user?.email ? {} : { email }),
+        }),
       });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(json.error || "Failed to update profile");
+        return;
+      }
       await refresh();
+      loadMe();
       toast.success(t("editProfile"));
     } catch {
       toast.error("Failed to update profile");
@@ -88,7 +103,19 @@ export default function ProfilePage() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-[color:var(--color-text-secondary)]">Email</label>
-          <input value={user?.email || ""} readOnly className={`${INPUT} opacity-60`} />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            readOnly={hasEmail}
+            placeholder={hasEmail ? undefined : "Add an email to finish registration"}
+            className={`${INPUT} ${hasEmail ? "opacity-60" : ""}`}
+          />
+          {!hasEmail && (
+            <p className="mt-1 text-xs text-[color:var(--color-text-secondary)]">
+              Add an email and set a password below to sign in without Steam.
+            </p>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-[color:var(--color-text-secondary)]">Name</label>

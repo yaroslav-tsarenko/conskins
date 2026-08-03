@@ -149,7 +149,7 @@ export function TradeSetupModal({
             <h3 className="font-display text-lg font-bold text-[color:var(--color-text)]">Sign in to buy</h3>
             <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">
               Create an account to buy <span className="font-semibold text-[color:var(--color-text)]">{skinName}</span>.
-              You can link Steam now or right before delivery.
+              You&apos;ll link Steam in the next step to receive the skin.
             </p>
             <Link
               href={authHref}
@@ -157,12 +157,6 @@ export function TradeSetupModal({
             >
               Continue with Email
             </Link>
-            <a
-              href={steamHref}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#171a21] px-5 py-3 text-sm font-bold text-white hover:brightness-125"
-            >
-              Sign in through Steam
-            </a>
           </div>
         )}
 
