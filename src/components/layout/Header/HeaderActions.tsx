@@ -19,6 +19,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { useFavorites } from "@/providers/FavoritesProvider";
 import { CurrencySwitcher } from "./CurrencySwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 const ACCOUNT_LINKS = [
   { href: "/account", icon: UserIcon, label: "Profile" },
@@ -61,6 +62,11 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-1.5">
+      {/* Theme toggle */}
+      <div className="hidden items-center rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] p-1 text-[color:var(--color-text-secondary)] md:flex">
+        <ThemeToggle />
+      </div>
+
       {/* Currency */}
       <div className="hidden items-center gap-0.5 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-1 py-1 md:flex">
         <CurrencySwitcher />

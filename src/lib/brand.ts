@@ -19,7 +19,7 @@ export const brand = {
   url: "https://conskins.com",
   tagline: "Trade CS2 skins smarter.",
   description:
-    "ConSkins — a premium CS2 skins marketplace. Browse thousands of skins with live float, pattern and price data, compare across markets, track price history, and trade instantly via your Steam account.",
+    "ConSkins — buy premium CS2 skins with instant, secure Steam delivery. Browse thousands of skins with live float, pattern and price data, compare across markets, and track price history.",
   applicationName: "ConSkins",
 
   company: {

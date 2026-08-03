@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     q: "What are trade holds and why do they happen?",
-    a: "Steam applies a trade hold (up to 8 days) when the seller doesn't have Steam Mobile Guard active, or hasn't had it active for at least 7 days. Buying from verified sellers with Mobile Guard means your skin arrives with no hold.",
+    a: "Steam applies a trade hold (up to 8 days) when your account doesn't have Steam Mobile Guard active, or hasn't had it active for at least 7 days. Enable Steam Mobile Guard so your skin arrives with no hold.",
   },
   {
     q: "Do I need a Steam trade URL?",

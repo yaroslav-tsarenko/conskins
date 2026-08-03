@@ -15,7 +15,7 @@ import {
 
 export const metadata: Metadata = {
   title: "How It Works",
-  description: `How buying and selling CS2 skins works on ${brand.displayName} — link Steam, pay from balance, receive your skin in seconds.`,
+  description: `How buying CS2 skins works on ${brand.displayName} — link Steam, pay from balance, receive your skin in seconds.`,
 };
 
 const steps = [
@@ -36,21 +36,21 @@ const steps = [
   },
 ];
 
-const sellSteps = [
+const assurances = [
+  {
+    Icon: ShieldCheck,
+    title: "Buyer protection",
+    body: "Your payment is only captured once the Steam trade offer is confirmed. If delivery can't be completed, your balance is restored.",
+  },
   {
     Icon: Link2,
-    title: "Link your Steam",
-    body: "Connect your Steam account and add your trade URL so our bot can send and receive offers securely.",
+    title: "Verified delivery",
+    body: "Every skin is delivered through our secure trading system straight to your Steam inventory — no manual middlemen involved.",
   },
   {
     Icon: Repeat,
-    title: "List for balance",
-    body: "Pick the skins you want to sell and set your price. Once a buyer purchases, our bot handles the trade automatically.",
-  },
-  {
-    Icon: Wallet,
-    title: "Get paid instantly",
-    body: "The sale value lands in your ConSkins balance the moment the trade completes — ready to spend or withdraw.",
+    title: "Live market pricing",
+    body: "Prices track the live market with float, pattern and cross-market data, so you always know you're paying a fair price.",
   },
 ];
 
@@ -58,7 +58,7 @@ const faqs = [
   {
     Icon: Clock,
     q: "Why do some trades have a hold?",
-    a: "Steam applies a hold (up to 8 days) when the seller doesn't have Mobile Guard active. Buying from verified sellers means no hold.",
+    a: "Steam applies a hold (up to 8 days) when your account doesn't have Mobile Guard active. Enable Steam Mobile Guard to receive items with no hold.",
   },
   {
     Icon: ShieldCheck,
@@ -109,16 +109,16 @@ export default function HowItWorksPage() {
         ))}
       </section>
 
-      {/* Selling */}
+      {/* Why ConSkins */}
       <section className="mt-12">
         <div className="mb-6 text-center">
-          <span className="eyebrow">Selling skins</span>
+          <span className="eyebrow">Why ConSkins</span>
           <h2 className="mt-2 font-serif text-2xl font-medium tracking-tight text-[color:var(--color-text)] sm:text-3xl">
-            Turn your inventory into balance
+            Safe, fast and fair every time
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {sellSteps.map(({ Icon, title, body }) => (
+          {assurances.map(({ Icon, title, body }) => (
             <div
               key={title}
               className="rounded-2xl border border-[color:var(--color-line)] bg-[color:var(--color-bg-elevated)] p-6"
@@ -176,7 +176,7 @@ export default function HowItWorksPage() {
         </p>
         <Link
           href="/catalog"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--color-primary-fg)] px-6 py-3 text-sm font-bold text-[color:var(--color-primary)] transition-transform hover:scale-[1.02]"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0A0F04] px-6 py-3 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
         >
           Browse the market <ArrowRight size={15} />
         </Link>

@@ -169,10 +169,10 @@ export function Hero({
               Explore skins <ArrowRight size={16} />
             </Link>
             <Link
-              href="/sell"
+              href="/how-it-works"
               className="inline-flex h-12 items-center gap-2 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] px-6 text-sm font-bold text-[color:var(--color-text)] transition hover:border-[color:var(--color-primary)]/60"
             >
-              <Wallet size={16} /> Sell skins
+              <Wallet size={16} /> How it works
             </Link>
           </div>
           <div className="mt-5 flex items-center gap-2 text-[13px] text-[color:var(--color-text-tertiary)]">

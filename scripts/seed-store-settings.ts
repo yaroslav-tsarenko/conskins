@@ -10,7 +10,7 @@ async function main() {
   const now = new Date().toISOString();
   await c.query(
     `INSERT INTO "StoreSettings" (id, name, description, "primaryColor", "secondaryColor", email, currency, "taxRate", "freeShippingMin", "metaTitle", "metaDescription", "updatedAt")
-     VALUES ('default', $1, $2, '#0F172A', '#FFFFFF', 'info@dropskin.co.uk', 'GBP', 20, 100, $3, $4, $5)
+     VALUES ('default', $1, $2, '#0F172A', '#FFFFFF', 'info@conskins.com', 'GBP', 20, 100, $3, $4, $5)
      ON CONFLICT (id) DO UPDATE
        SET name = EXCLUDED.name,
            description = EXCLUDED.description,
@@ -22,10 +22,10 @@ async function main() {
            "metaDescription" = EXCLUDED."metaDescription",
            "updatedAt" = EXCLUDED."updatedAt"`,
     [
-      "Dropskin",
-      "Refined athletic apparel for men, women and kids. Shipped from the United Kingdom.",
-      "Dropskin — Refined athletic apparel",
-      "Curated apparel from Dropskin — sustainably sourced tees, hoodies and swimwear for men, women and kids. Shipped from the United Kingdom.",
+      "ConSkins",
+      "Buy CS2 skins with instant, secure Steam delivery.",
+      "ConSkins — Buy CS2 skins",
+      "ConSkins — browse CS2 skins with live float, pattern and price data and receive them instantly via your Steam account.",
       now,
     ],
   );

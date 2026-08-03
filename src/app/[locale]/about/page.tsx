@@ -205,7 +205,7 @@ export default function AboutPage() {
         </p>
         <Link
           href="/catalog"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--color-primary-fg)] px-6 py-3 text-sm font-bold text-[color:var(--color-primary)] transition-transform hover:scale-[1.02]"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0A0F04] px-6 py-3 text-sm font-bold text-white shadow-sm transition-transform hover:scale-[1.02]"
         >
           Explore the market <ArrowRight size={15} />
         </Link>

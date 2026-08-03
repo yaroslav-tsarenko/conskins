@@ -128,6 +128,9 @@ export async function POST(req: Request) {
     purchaseId: purchase.id,
     tradeUrl: steam.tradeUrl,
     marketHashName: listing.marketHashName,
+    steamId64: steam.steamId64,
+    tradeToken: steam.tradeToken ?? "",
+    amount: fees.total,
   });
 
   return NextResponse.json({

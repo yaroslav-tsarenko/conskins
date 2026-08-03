@@ -26,11 +26,11 @@
   --color-ink-2: #9AA3B2;
   --color-ink-3: #5F6774;
 
-  /* Primary — volt lime */
-  --color-primary: #B4FF39;
-  --color-primary-hover: #C9FF6B;
-  --color-primary-tint: rgba(180, 255, 57, 0.12);
-  --color-primary-glow: rgba(180, 255, 57, 0.35);
+  /* Primary — volt lime (deepened for readable dark text) */
+  --color-primary: #84CC16;
+  --color-primary-hover: #A3E635;
+  --color-primary-tint: rgba(132, 204, 22, 0.12);
+  --color-primary-glow: rgba(132, 204, 22, 0.35);
   --color-primary-fg: #0A0F04;
 
   /* Accent — ice blue */

@@ -267,7 +267,7 @@ export default function ContactPage() {
               {[
                 { q: "How fast is skin delivery?", a: "Usually seconds — our bot sends the trade offer the moment payment clears." },
                 { q: "Can I get a refund?", a: "Yes, if the trade offer hasn't been sent. Once delivered, trades are final." },
-                { q: "Why is there a trade hold?", a: "Steam holds trades when Mobile Guard isn't active. Buy from verified sellers to avoid it." },
+                { q: "Why is there a trade hold?", a: "Steam holds trades when Mobile Guard isn't active on your account. Enable it to receive items instantly." },
                 { q: "How do I track my purchase?", a: "Check Account → My Trades for a live delivery status." },
               ].map((faq, i) => (
                 <div key={i} className="rounded-lg bg-[color:var(--color-bg-secondary)] p-3 text-[13px]">
@@ -290,8 +290,8 @@ export default function ContactPage() {
                 <span className="font-semibold">Within 24h</span>
               </div>
               <div className="flex justify-between text-[13px]">
-                <span className="opacity-70">Wholesale (B2B)</span>
-                <span className="font-semibold">Within 48h</span>
+                <span className="opacity-70">Order &amp; delivery support</span>
+                <span className="font-semibold">Within 24h</span>
               </div>
             </div>
           </div>

@@ -25,7 +25,6 @@ import { CollectionsStory } from "@/components/home/CollectionsStory";
 import { CollectionsShowcase } from "@/components/home/CollectionsShowcase";
 import { LoadoutTeaser } from "@/components/home/LoadoutTeaser";
 import { NewsSection } from "@/components/home/NewsSection";
-import { SellerToolsSection } from "@/components/home/SellerToolsSection";
 import { MarketTicker } from "@/components/home/MarketTicker";
 import { RarityExplorer } from "@/components/home/RarityExplorer";
 import { WearSlider } from "@/components/home/WearSlider";
@@ -346,11 +345,6 @@ export default async function HomePage({ params }: HomePageProps) {
           <SectionHeader icon={Newspaper} eyebrow="From the desk" title="Guides & market reads" />
           <NewsSection />
         </section>
-
-        {/* ── Seller tools ─────────────────────────────────────── */}
-        <div className="mt-14">
-          <SellerToolsSection />
-        </div>
       </div>
     </>
   );

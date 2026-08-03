@@ -611,10 +611,16 @@ model SkinPurchase {
   currency  String      @default("USD")
   status    String      @default("pending") // pending | trade_sent | completed | failed
   tradeUrl  String?
+  // Fulfilment provider (SIH) tracking.
+  provider        String? // e.g. "sih"
+  providerOrderId String? // order id returned by the provider
+  providerStatus  String? // raw provider status (created|processing|sent|finished|failed|penalized)
+  providerError   String? // last provider error message, if any
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   @@index([userId])
+  @@index([providerOrderId])
 }
 
 // Idempotent catalog import run log.

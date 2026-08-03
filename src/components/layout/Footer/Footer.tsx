@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { openCookieSettings } from "@/components/shared/CookieConsent/CookieConsent";
-import { FaDiscord, FaXTwitter, FaInstagram } from "react-icons/fa6";
+import { FaInstagram, FaLinkedin } from "react-icons/fa6";
 import {
   ArrowRight,
   Mail,
@@ -27,15 +27,14 @@ interface Group {
 
 const groups: Group[] = [
   {
-    key: "marketplace",
-    title: "Marketplace",
+    key: "shop",
+    title: "Shop",
     items: [
       { href: "/catalog", label: "All skins" },
       { href: "/catalog?category=Knives", label: "Knives" },
       { href: "/catalog?category=Gloves", label: "Gloves" },
       { href: "/catalog?sort=discount", label: "Price drops" },
       { href: "/collections", label: "Collections" },
-      { href: "/sell", label: "Sell skins" },
     ],
   },
   {
@@ -62,15 +61,24 @@ const groups: Group[] = [
 ];
 
 const trustBadges = [
-  { icon: Zap, label: "Instant Steam trades" },
+  { icon: Zap, label: "Instant Steam delivery" },
   { icon: ShieldCheck, label: "Buyer protection" },
-  { icon: Repeat, label: "Sell for balance" },
+  { icon: Repeat, label: "Secure payments" },
 ];
 
+const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || brand.social.instagram;
+const linkedinUrl =
+  process.env.NEXT_PUBLIC_LINKEDIN_URL || "https://www.linkedin.com/company/conskins/";
+
 const socialLinks = [
-  { icon: FaDiscord, label: "Discord", href: "/coming-soon", external: false },
-  { icon: FaXTwitter, label: "X (Twitter)", href: "/coming-soon", external: false },
-  { icon: FaInstagram, label: "Instagram", href: brand.social.instagram, external: true },
+  { icon: FaInstagram, label: "Instagram", href: instagramUrl, external: true },
+  { icon: FaLinkedin, label: "LinkedIn", href: linkedinUrl, external: true },
+];
+
+const paymentLogos = [
+  { src: "/payment/visa.svg", label: "Visa", w: 40, h: 26 },
+  { src: "/payment/mastercard.svg", label: "Mastercard", w: 34, h: 26 },
+  { src: "/payment/pci-dss.svg", label: "PCI DSS Compliant", w: 30, h: 30 },
 ];
 
 function NewsletterForm() {
@@ -279,7 +287,29 @@ export function Footer() {
             </a>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-2 md:items-end">
+          <div className="flex shrink-0 flex-col gap-3 md:items-end">
+            <div
+              className="flex items-center gap-2.5"
+              aria-label="Accepted payment methods and security compliance"
+            >
+              {paymentLogos.map(({ src, label, w, h }) => (
+                <span
+                  key={label}
+                  title={label}
+                  className="inline-flex h-9 w-14 items-center justify-center rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-white p-1.5"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt={label}
+                    width={w}
+                    height={h}
+                    loading="lazy"
+                    className="block max-h-full max-w-full object-contain"
+                  />
+                </span>
+              ))}
+            </div>
             <div className="inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-[color:var(--color-text-secondary)]">
               <Globe size={11} className="text-[color:var(--color-primary)]" />
               <span>

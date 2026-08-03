@@ -1,10 +1,17 @@
-// Pluggable trade-delivery layer. A real integration would drive a Steam bot
-// (node-steam-user / steam-tradeoffer-manager) to send the trade offer and poll
-// for acceptance. We ship a deterministic stub so the buy flow is fully
-// exercisable in dev without Steam credentials. Swap `activeDeliveryProvider`
-// for a real implementation without touching callers.
+// Pluggable trade-delivery layer. In production this drives SIH
+// (https://docs.sih.app) to buy the item and dispatch a Steam trade offer. When
+// SIH is not configured we fall back to a deterministic stub so the buy flow is
+// fully exercisable in dev without provider credentials. Callers only ever touch
+// `activeDeliveryProvider` and never need to know which one is active.
 
 import { prisma } from "@/lib/prisma";
+import {
+  createOrder,
+  getOrder,
+  isSihConfigured,
+  mapSihStatus,
+  type SihOrderStatus,
+} from "@/lib/skins/sih";
 
 export type PurchaseStatus = "pending" | "trade_sent" | "completed" | "failed";
 
@@ -12,6 +19,10 @@ export interface DeliveryRequest {
   purchaseId: string;
   tradeUrl: string;
   marketHashName: string;
+  // Buyer Steam identity + the amount to spend — required by real providers.
+  steamId64: string;
+  tradeToken: string;
+  amount: number;
 }
 
 export interface TradeDeliveryProvider {
@@ -33,17 +44,137 @@ class StubDeliveryProvider implements TradeDeliveryProvider {
   name = "stub";
 
   async deliver(req: DeliveryRequest): Promise<void> {
-    // Offer "sent" almost immediately.
     setTimeout(() => {
       void setStatus(req.purchaseId, "trade_sent");
-      // Buyer "accepts" a few seconds later.
       setTimeout(() => void setStatus(req.purchaseId, "completed"), 6000);
     }, 1500);
   }
 }
 
-export const activeDeliveryProvider: TradeDeliveryProvider =
-  new StubDeliveryProvider();
+// Real fulfilment via SIH. Places the order with our purchase id as `customId`
+// so webhook/polling reconciliation is idempotent, records the provider order
+// id, and reflects the initial provider status. Ongoing status transitions are
+// driven by the SIH webhook and the reconcile poller below.
+class SihDeliveryProvider implements TradeDeliveryProvider {
+  name = "sih";
+
+  async deliver(req: DeliveryRequest): Promise<void> {
+    const result = await createOrder({
+      steamId: req.steamId64,
+      token: req.tradeToken,
+      item: req.marketHashName,
+      amount: req.amount,
+      customId: req.purchaseId,
+    });
+
+    if (!result.success) {
+      await prisma.skinPurchase
+        .update({
+          where: { id: req.purchaseId },
+          data: { status: "failed", provider: "sih", providerError: result.error ?? "SIH order failed" },
+        })
+        .catch(() => {});
+      // Release the listing so a failed buy doesn't leave it stuck as sold.
+      await releaseListingForPurchase(req.purchaseId);
+      return;
+    }
+
+    await prisma.skinPurchase
+      .update({
+        where: { id: req.purchaseId },
+        data: {
+          provider: "sih",
+          providerOrderId: result.id != null ? String(result.id) : null,
+          providerStatus: "created",
+          providerError: null,
+        },
+      })
+      .catch(() => {});
+  }
+}
+
+async function releaseListingForPurchase(purchaseId: string) {
+  const purchase = await prisma.skinPurchase
+    .findUnique({ where: { id: purchaseId }, select: { listingId: true } })
+    .catch(() => null);
+  if (purchase?.listingId) {
+    await prisma.skinListing
+      .updateMany({ where: { id: purchase.listingId }, data: { status: "available" } })
+      .catch(() => {});
+  }
+}
+
+// Apply a raw SIH status to a purchase (by our id or the provider order id).
+// Shared by the webhook handler and the reconcile poller so both stay in sync.
+export async function applyProviderStatus(params: {
+  purchaseId?: string;
+  providerOrderId?: string;
+  rawStatus: SihOrderStatus | string;
+  error?: string | null;
+}): Promise<boolean> {
+  const where = params.purchaseId
+    ? { id: params.purchaseId }
+    : params.providerOrderId
+      ? { providerOrderId: params.providerOrderId }
+      : null;
+  if (!where) return false;
+
+  const mapped = mapSihStatus(params.rawStatus);
+  const purchase = await prisma.skinPurchase.findFirst({ where, select: { id: true, listingId: true } }).catch(() => null);
+  if (!purchase) return false;
+
+  await prisma.skinPurchase
+    .update({
+      where: { id: purchase.id },
+      data: {
+        status: mapped,
+        providerStatus: String(params.rawStatus),
+        providerError: params.error ?? null,
+      },
+    })
+    .catch(() => {});
+
+  // A failed/penalized order means the buyer never receives the skin — free the
+  // listing so it can be sold again.
+  if (mapped === "failed") {
+    await prisma.skinListing
+      .updateMany({ where: { id: purchase.listingId }, data: { status: "available" } })
+      .catch(() => {});
+  }
+  return true;
+}
+
+// Pull the latest status for a purchase straight from SIH and apply it. Used as
+// a polling fallback (SIH does not publicly document webhooks) and to let the
+// buyer's "My Trades" view self-heal on demand.
+export async function reconcilePurchaseFromProvider(purchaseId: string): Promise<PurchaseStatus | null> {
+  if (!isSihConfigured()) return null;
+  const purchase = await prisma.skinPurchase
+    .findUnique({ where: { id: purchaseId }, select: { id: true, providerOrderId: true, status: true } })
+    .catch(() => null);
+  if (!purchase) return null;
+  // Terminal states never change again.
+  if (purchase.status === "completed" || purchase.status === "failed") {
+    return purchase.status as PurchaseStatus;
+  }
+
+  const order = await getOrder({
+    id: purchase.providerOrderId ?? undefined,
+    customId: purchase.id,
+  });
+  if (!order) return purchase.status as PurchaseStatus;
+
+  await applyProviderStatus({
+    purchaseId: purchase.id,
+    rawStatus: order.status,
+    error: order.error ?? null,
+  });
+  return mapSihStatus(order.status);
+}
+
+export const activeDeliveryProvider: TradeDeliveryProvider = isSihConfigured()
+  ? new SihDeliveryProvider()
+  : new StubDeliveryProvider();
 
 // ── Fee model ────────────────────────────────────────────────────────────
 // Buyers pay the listed price; buyer protection is included at no extra cost.

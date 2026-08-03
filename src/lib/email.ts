@@ -133,18 +133,18 @@ export async function sendWelcomeEmail(email: string, name?: string | null): Pro
       `
       <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:${TEXT_COLOR};">${greeting}, welcome to ConSkins!</h1>
       <p style="color:${MUTED_COLOR};line-height:1.6;margin:0 0 16px;">
-        Your account is ready. Link your Steam account and start buying and selling CS2 skins with instant, secure delivery.
+        Your account is ready. Link your Steam account and start buying CS2 skins with instant, secure delivery.
       </p>
       <div style="background:#f9f9f9;border-radius:8px;padding:16px;margin:0 0 24px;">
         <p style="margin:0 0 8px;font-weight:600;color:${TEXT_COLOR};">What you can do now:</p>
         <ul style="margin:0;padding:0 0 0 20px;color:${MUTED_COLOR};line-height:1.8;">
-          <li>Browse the market for the skins you want</li>
+          <li>Browse the store for the skins you want</li>
           <li>Link your Steam account and add your trade URL</li>
           <li>Buy skins delivered to your inventory in seconds</li>
           <li>Track every purchase under My Trades</li>
         </ul>
       </div>
-      ${button(`${siteUrl}/catalog`, "Browse the Market")}
+      ${button(`${siteUrl}/catalog`, "Browse skins")}
       <p style="color:#999;font-size:13px;margin:24px 0 0;text-align:center;">
         Buyer protection on every trade
       </p>

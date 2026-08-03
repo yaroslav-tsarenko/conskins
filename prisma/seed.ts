@@ -17,9 +17,9 @@ async function main() {
     update: {},
     create: {
       id: "default",
-      name: "FloatMarket",
-      description: "Refined athletic apparel for men, women and kids. Shipped from the United Kingdom.",
-      email: "info@floatmarket.com",
+      name: "ConSkins",
+      description: "Buy CS2 skins with instant, secure Steam delivery.",
+      email: "info@conskins.com",
       currency: "GBP",
       taxRate: 20,
       freeShippingMin: 100,

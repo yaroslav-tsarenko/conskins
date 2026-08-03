@@ -12,10 +12,10 @@
 /* ── DEFAULT (dark, graphite/volt) — primary theme ────────────────── */
 :root {
   /* ── Brand ──────────────────────────────────────────────────────── */
-  --color-primary: #B4FF39;          /* volt lime — CTAs, buy */
-  --color-primary-hover: #C9FF6B;
-  --color-primary-tint: rgba(180, 255, 57, 0.12);
-  --color-primary-glow: rgba(180, 255, 57, 0.35);
+  --color-primary: #84CC16;          /* volt lime (deepened) — CTAs, buy */
+  --color-primary-hover: #A3E635;
+  --color-primary-tint: rgba(132, 204, 22, 0.12);
+  --color-primary-glow: rgba(132, 204, 22, 0.35);
   --color-primary-fg: #0A0F04;       /* dark ink on volt */
 
   --color-accent: #5AC8FF;           /* ice blue — links, live data */
@@ -165,11 +165,11 @@
 /* ── LIGHT-MODE OPT-IN — activated with .light or [data-theme="light"] ── */
 [data-theme="light"],
 .light {
-  --color-primary: #65A30D;          /* volt darkened for light bg */
-  --color-primary-hover: #4D7C0F;
-  --color-primary-tint: rgba(101, 163, 13, 0.10);
-  --color-primary-glow: rgba(101, 163, 13, 0.22);
-  --color-primary-fg: #FFFFFF;
+  --color-primary: #84CC16;          /* volt — same deepened tone as dark */
+  --color-primary-hover: #65A30D;
+  --color-primary-tint: rgba(132, 204, 22, 0.12);
+  --color-primary-glow: rgba(132, 204, 22, 0.24);
+  --color-primary-fg: #0A0F04;       /* dark ink — white blends on volt */
 
   --color-accent: #0284C7;
   --color-accent-hover: #0369A1;

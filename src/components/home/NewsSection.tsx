@@ -13,12 +13,12 @@ const POSTS = [
   },
   {
     icon: Wallet,
-    tag: "Sellers",
+    tag: "Balance",
     accent: "var(--color-primary)",
-    title: "Turn your inventory into cash",
-    text: "List skins in minutes, price them against live market data and get paid on every sale.",
-    href: "/sell",
-    cta: "Start selling",
+    title: "Top up and buy in one click",
+    text: "Load your ConSkins balance once, then check out instantly — funds are only captured on a confirmed trade.",
+    href: "/how-it-works",
+    cta: "See how it works",
   },
   {
     icon: BarChart3,

@@ -5,9 +5,13 @@ const OPENID_NS = "http://specs.openid.net/auth/2.0";
 const IDENTIFIER_SELECT = "http://specs.openid.net/auth/2.0/identifier_select";
 
 export function getBaseUrl(): string {
+  // Prefer explicit, human-facing URLs so the Steam consent screen shows the
+  // canonical domain (conskins.com) instead of the raw Vercel deployment host.
+  // VERCEL_URL is only used as a last resort for preview deployments.
   return (
     process.env.APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
     "http://localhost:3000"
   ).replace(/\/$/, "");

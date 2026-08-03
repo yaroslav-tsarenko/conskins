@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import { EXTERIORS, RARITY_TIERS, type ExteriorCode } from "@/lib/skins/shared";
 import { RangeSlider } from "@/components/ui/RangeSlider";
 import { FilterGroup, ChipButton, Toggle, TextFilterInput } from "./filterPrimitives";
 import type { Facets, FiltersState, PatchFilters } from "./types";
+import { useCurrency } from "@/providers/CurrencyProvider";
 
 const RARITIES = Object.entries(RARITY_TIERS)
   .sort((a, b) => a[1].order - b[1].order)
@@ -66,22 +67,69 @@ export function FloatRangeSlider({ filters, patch }: { filters: FiltersState; pa
 }
 
 export function PriceRangeSlider({ filters, patch }: { filters: FiltersState; patch: PatchFilters }) {
-  const lo = filters.priceMin === "" ? 0 : Math.min(PRICE_CAP, Number(filters.priceMin));
-  const hi = filters.priceMax === "" ? PRICE_CAP : Math.min(PRICE_CAP, Number(filters.priceMax));
+  // Listing prices are stored in USD, so the filter state (priceMin/priceMax)
+  // is always kept in USD and sent to the API unchanged. The UI, however,
+  // displays and accepts values in the currency selected in the header — we
+  // convert on the way in and out so the slider/inputs track that currency.
+  const { currency, symbol, rates } = useCurrency();
+
+  const usdToDisplay = (usd: number) => (usd * rates[currency]) / rates.USD;
+  const displayToUsd = (disp: number) => (disp * rates.USD) / rates[currency];
+
+  // Round the cap to a clean number in the display currency.
+  const capDisplay = useMemo(
+    () => Math.max(1, Math.round(usdToDisplay(PRICE_CAP))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currency, rates],
+  );
+
+  const loDisplay =
+    filters.priceMin === "" ? 0 : Math.min(capDisplay, Math.round(usdToDisplay(Number(filters.priceMin))));
+  const hiDisplay =
+    filters.priceMax === "" ? capDisplay : Math.min(capDisplay, Math.round(usdToDisplay(Number(filters.priceMax))));
+
+  // Local input state in the display currency (keeps typing smooth without
+  // round-trip rounding), re-synced whenever the stored USD value or the
+  // selected currency changes.
+  const [minInput, setMinInput] = useState(filters.priceMin === "" ? "" : String(loDisplay));
+  const [maxInput, setMaxInput] = useState(filters.priceMax === "" ? "" : String(hiDisplay));
+
+  useEffect(() => {
+    setMinInput(filters.priceMin === "" ? "" : String(Math.round(usdToDisplay(Number(filters.priceMin)))));
+    setMaxInput(filters.priceMax === "" ? "" : String(Math.round(usdToDisplay(Number(filters.priceMax)))));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currency, rates, filters.priceMin, filters.priceMax]);
+
+  const commitMin = (raw: string) => {
+    setMinInput(raw);
+    if (raw === "") return patch({ priceMin: "" });
+    const disp = Number(raw);
+    if (!Number.isFinite(disp) || disp <= 0) return patch({ priceMin: "" });
+    patch({ priceMin: String(Math.round(displayToUsd(disp) * 100) / 100) });
+  };
+
+  const commitMax = (raw: string) => {
+    setMaxInput(raw);
+    if (raw === "") return patch({ priceMax: "" });
+    const disp = Number(raw);
+    if (!Number.isFinite(disp) || disp <= 0) return patch({ priceMax: "" });
+    patch({ priceMax: String(Math.round(displayToUsd(disp) * 100) / 100) });
+  };
+
   return (
-    <FilterGroup title="Price (USD)">
+    <FilterGroup title={`Price (${currency})`}>
       <RangeSlider
         min={0}
-        max={PRICE_CAP}
-        step={5}
-        value={[lo, hi]}
+        max={capDisplay}
+        step={Math.max(1, Math.round(capDisplay / 600))}
+        value={[loDisplay, hiDisplay]}
         onChange={([a, b]) =>
           patch({
-            priceMin: a <= 0 ? "" : String(a),
-            priceMax: b >= PRICE_CAP ? "" : String(b),
+            priceMin: a <= 0 ? "" : String(Math.round(displayToUsd(a) * 100) / 100),
+            priceMax: b >= capDisplay ? "" : String(Math.round(displayToUsd(b) * 100) / 100),
           })
         }
-        formatValue={(v) => (v >= PRICE_CAP ? `$${PRICE_CAP}+` : `$${v}`)}
+        formatValue={(v) => (v >= capDisplay ? `${symbol}${capDisplay}+` : `${symbol}${v}`)}
         ariaLabel="Price"
       />
       <div className="mt-1 flex items-center gap-2">
@@ -89,8 +137,8 @@ export function PriceRangeSlider({ filters, patch }: { filters: FiltersState; pa
           type="number"
           inputMode="decimal"
           placeholder="Min"
-          value={filters.priceMin}
-          onChange={(e) => patch({ priceMin: e.target.value })}
+          value={minInput}
+          onChange={(e) => commitMin(e.target.value)}
           className="tnum w-full rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1.5 font-mono text-[13px] outline-none focus:border-[color:var(--color-primary)]/60"
         />
         <span className="text-[color:var(--color-text-tertiary)]">–</span>
@@ -98,8 +146,8 @@ export function PriceRangeSlider({ filters, patch }: { filters: FiltersState; pa
           type="number"
           inputMode="decimal"
           placeholder="Max"
-          value={filters.priceMax}
-          onChange={(e) => patch({ priceMax: e.target.value })}
+          value={maxInput}
+          onChange={(e) => commitMax(e.target.value)}
           className="tnum w-full rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-bg)] px-2 py-1.5 font-mono text-[13px] outline-none focus:border-[color:var(--color-primary)]/60"
         />
       </div>

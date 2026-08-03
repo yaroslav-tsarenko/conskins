@@ -2,6 +2,7 @@ import { Link } from "@/i18n/routing";
 import { SkinPrice } from "@/components/shared/SkinPrice";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { reconcilePurchaseFromProvider } from "@/lib/skins/delivery";
 import { Repeat, ArrowRight } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -38,6 +39,23 @@ export default async function TradesPage() {
       }).catch(() => [])
     : [];
 
+  // Self-heal non-terminal purchases against the fulfilment provider so the
+  // buyer sees the latest Steam delivery status on load. No-op unless SIH is
+  // configured; terminal (completed/failed) rows are skipped inside reconcile.
+  const openPurchases = purchases.filter(
+    (p) => p.status === "pending" || p.status === "trade_sent",
+  );
+  if (openPurchases.length > 0) {
+    const updated = await Promise.all(
+      openPurchases.map(async (p) => [p.id, await reconcilePurchaseFromProvider(p.id)] as const),
+    );
+    const latest = new Map(updated.filter(([, s]) => s != null).map(([id, s]) => [id, s!]));
+    for (const p of purchases) {
+      const s = latest.get(p.id);
+      if (s) p.status = s;
+    }
+  }
+
   return (
     <div className="max-w-3xl">
       <div className="flex items-center gap-3">
@@ -66,7 +84,7 @@ export default async function TradesPage() {
             href="/catalog"
             className="mt-5 inline-flex h-11 items-center gap-2 rounded-full bg-[color:var(--color-primary)] px-6 text-sm font-bold text-[color:var(--color-primary-fg)] transition hover:brightness-110"
           >
-            Browse the market <ArrowRight size={16} />
+            Browse skins <ArrowRight size={16} />
           </Link>
         </div>
       ) : (
