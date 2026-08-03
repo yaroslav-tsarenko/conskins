@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
+import { getBalanceEur } from "@/lib/wallet";
 
 export async function GET() {
   try {
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ user: null });
+    const walletBalanceEur = await getBalanceEur(user.id);
     return NextResponse.json({
       user: {
         id: user.id,
@@ -13,6 +15,7 @@ export async function GET() {
         role: user.role,
         phone: user.phone,
         hasPassword: Boolean(user.passwordHash),
+        walletBalanceEur,
         steam: user.steamAccount
           ? {
               personaName: user.steamAccount.personaName,

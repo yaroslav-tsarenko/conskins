@@ -13,6 +13,7 @@ import {
   Link2,
   Shield,
   Heart,
+  Plus,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/providers/AuthProvider";
@@ -23,6 +24,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const ACCOUNT_LINKS = [
   { href: "/account", icon: UserIcon, label: "Profile" },
+  { href: "/account/wallet", icon: Wallet, label: "Wallet" },
   { href: "/account/trades", icon: Repeat, label: "My Trades" },
   { href: "/account/trade-url", icon: Link2, label: "Trade URL settings" },
 ];
@@ -49,7 +51,7 @@ function useDismiss(onClose: () => void) {
 export function HeaderActions() {
   const pathname = usePathname();
   const { user, role, signOut } = useAuth();
-  const { symbol } = useCurrency();
+  const { symbol, convert } = useCurrency();
   const { count, ready } = useFavorites();
 
   const [accountOpen, setAccountOpen] = useState(false);
@@ -89,12 +91,18 @@ export function HeaderActions() {
       {/* Balance */}
       {user && (
         <Link
-          href="/account"
-          className="hidden h-10 items-center gap-2 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-3 text-[color:var(--color-text)] transition-colors hover:border-[color:var(--color-accent)]/60 sm:inline-flex"
+          href="/account/wallet"
+          className="group hidden h-10 items-center gap-2 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-3 text-[color:var(--color-text)] transition-colors hover:border-[color:var(--color-accent)]/60 sm:inline-flex"
           aria-label="Wallet balance"
         >
           <Wallet size={15} className="text-[color:var(--color-accent)]" />
-          <span className="font-mono text-[12.5px] font-bold tabular-nums">{symbol}0.00</span>
+          <span className="font-mono text-[12.5px] font-bold tabular-nums">
+            {symbol}
+            {convert(user.walletBalanceEur ?? 0).toFixed(2)}
+          </span>
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--color-accent)]/15 text-[color:var(--color-accent)] transition-colors group-hover:bg-[color:var(--color-accent)]/25">
+            <Plus size={13} />
+          </span>
         </Link>
       )}
 

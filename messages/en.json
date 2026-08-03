@@ -147,6 +147,7 @@
   "account": {
     "title": "My Account",
     "welcome": "Welcome, {name}",
+    "wallet": "Wallet",
     "orders": "My Trades",
     "profile": "Profile",
     "addresses": "Addresses",

@@ -17,6 +17,9 @@ interface AuthUser {
   role: string;
   phone?: string | null;
   steam?: SteamSummary | null;
+  // Authoritative wallet balance in EUR (base currency). Display components
+  // convert to the user's selected currency.
+  walletBalanceEur?: number;
 }
 
 interface AuthContextType {
