@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { exteriorMeta } from "@/lib/skins/shared";
@@ -40,9 +40,52 @@ export function SkinDetailClient({
       : skin.listings[0]?.id) ?? "",
   );
   const [buyOpen, setBuyOpen] = useState(false);
+
+  // Lazy on-demand price refresh: when the page opens, pull the current SIH
+  // prices and merge them into the displayed listings (no cron).
+  type PricePatch = {
+    price: number;
+    steamPrice: number | null;
+    discountPct: number | null;
+    imageUrl: string | null;
+  };
+  const [priceOverrides, setPriceOverrides] = useState<Record<string, PricePatch>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/skins/${skin.id}/refresh`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.ok || !Array.isArray(data.listings)) return;
+        const next: Record<string, PricePatch> = {};
+        for (const l of data.listings as (PricePatch & { id: string })[]) {
+          next[l.id] = {
+            price: l.price,
+            steamPrice: l.steamPrice,
+            discountPct: l.discountPct,
+            imageUrl: l.imageUrl,
+          };
+        }
+        setPriceOverrides(next);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [skin.id]);
+
+  const listings = useMemo(
+    () =>
+      skin.listings.map((l) => {
+        const patch = priceOverrides[l.id];
+        return patch ? { ...l, ...patch } : l;
+      }),
+    [skin.listings, priceOverrides],
+  );
+
   const selected = useMemo(
-    () => skin.listings.find((l) => l.id === selectedId) ?? skin.listings[0],
-    [skin.listings, selectedId],
+    () => listings.find((l) => l.id === selectedId) ?? listings[0],
+    [listings, selectedId],
   );
 
   const ext = selected ? exteriorMeta(selected.exterior) : null;
@@ -177,7 +220,7 @@ export function SkinDetailClient({
           </div>
 
           <ListingsTable
-            listings={skin.listings}
+            listings={listings}
             selectedId={selectedId}
             onSelect={setSelectedId}
           />

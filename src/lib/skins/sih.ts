@@ -203,6 +203,30 @@ export async function getItems(
   return data?.items ?? {};
 }
 
+// Module-level cache of the full get-items map. The catalog is ~17k items and
+// SIH returns it in one call, so we memoise it briefly and let per-page-view
+// price refreshes read from this snapshot instead of hitting SIH every time.
+let itemsCache: { at: number; items: Record<string, SihItem> } | null = null;
+let itemsInflight: Promise<Record<string, SihItem>> | null = null;
+const ITEMS_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+export async function getCachedItems(
+  opts: { appId?: number; extended?: boolean; maxAgeMs?: number } = {},
+): Promise<Record<string, SihItem>> {
+  const maxAge = opts.maxAgeMs ?? ITEMS_TTL_MS;
+  if (itemsCache && Date.now() - itemsCache.at < maxAge) return itemsCache.items;
+  if (itemsInflight) return itemsInflight;
+  itemsInflight = getItems({ appId: opts.appId, extended: opts.extended ?? true })
+    .then((items) => {
+      itemsCache = { at: Date.now(), items };
+      return items;
+    })
+    .finally(() => {
+      itemsInflight = null;
+    });
+  return itemsInflight;
+}
+
 // GET /get-min-item — lowest available price for a market hash name.
 export async function getMinItemPrice(item: string, appId = SIH_APP_ID): Promise<number | null> {
   try {
