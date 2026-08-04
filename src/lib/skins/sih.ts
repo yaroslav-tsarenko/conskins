@@ -170,6 +170,39 @@ export async function getOrder(params: { id?: string | number; customId?: string
   }
 }
 
+// Shape of one entry in the GET /get-items map (extended payload).
+export interface SihItem {
+  price: number;
+  count?: number;
+  image?: string;
+  color?: string;
+  phase?: string;
+  // Present on some items; absent in the CS2 catalog we've observed.
+  steam?: number;
+  sell?: number;
+  market?: string;
+}
+
+// GET /get-items — the entire live market catalog, keyed by market hash name.
+// One call returns every currently-sellable item (~17k for CS2), so callers
+// should treat it as a bulk snapshot rather than paginate.
+export async function getItems(
+  opts: { appId?: number; extended?: boolean; minified?: boolean } = {},
+): Promise<Record<string, SihItem>> {
+  const data = await request<{ success?: boolean; items?: Record<string, SihItem> }>(
+    "GET",
+    "get-items",
+    {
+      query: {
+        appId: opts.appId ?? SIH_APP_ID,
+        extended: opts.extended ? true : undefined,
+        minified: opts.minified ? true : undefined,
+      },
+    },
+  );
+  return data?.items ?? {};
+}
+
 // GET /get-min-item — lowest available price for a market hash name.
 export async function getMinItemPrice(item: string, appId = SIH_APP_ID): Promise<number | null> {
   try {

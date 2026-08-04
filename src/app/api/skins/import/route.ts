@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { importSkins } from "@/lib/skins/import";
+import { importSihSkins } from "@/lib/skins/sih-import";
 
 // Long-running catalog refresh. Protect with CRON_SECRET (Authorization: Bearer …)
 // so only Vercel Cron / trusted callers can trigger it.
@@ -22,8 +23,14 @@ async function run(req: Request) {
   const dryRun = url.searchParams.get("dryRun") === "1";
   const limitParam = url.searchParams.get("limit");
   const limit = limitParam ? Number(limitParam) : undefined;
+  const source = url.searchParams.get("source");
 
   try {
+    if (source === "sih") {
+      const prune = url.searchParams.get("prune") !== "0";
+      const result = await importSihSkins({ dryRun, limit, prune });
+      return NextResponse.json({ ok: true, source: "sih", result });
+    }
     const result = await importSkins({ dryRun, limit });
     return NextResponse.json({ ok: true, result });
   } catch (err) {
