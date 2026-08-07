@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { openCookieSettings } from "@/components/shared/CookieConsent/CookieConsent";
-import { FaInstagram, FaLinkedin } from "react-icons/fa6";
 import {
   ArrowRight,
   Mail,
@@ -64,15 +63,6 @@ const trustBadges = [
   { icon: Zap, label: "Instant Steam delivery" },
   { icon: ShieldCheck, label: "Buyer protection" },
   { icon: Repeat, label: "Secure payments" },
-];
-
-const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || brand.social.instagram;
-const linkedinUrl =
-  process.env.NEXT_PUBLIC_LINKEDIN_URL || "https://www.linkedin.com/company/conskins/";
-
-const socialLinks = [
-  { icon: FaInstagram, label: "Instagram", href: instagramUrl, external: true },
-  { icon: FaLinkedin, label: "LinkedIn", href: linkedinUrl, external: true },
 ];
 
 const paymentLogos = [
@@ -225,34 +215,6 @@ export function Footer() {
                 </li>
               )}
             </ul>
-            {group.key === "tools" && (
-              <>
-                <h3 className="pb-4 pt-8 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[color:var(--color-text-tertiary)]">
-                  Community
-                </h3>
-                <ul className="grid gap-y-2.5">
-                  {socialLinks.map(({ icon: Icon, label, href, external }) => {
-                    const cls =
-                      "inline-flex items-center gap-2 text-[13.5px] text-[color:var(--color-text-secondary)] transition-colors hover:text-[color:var(--color-primary)]";
-                    return (
-                      <li key={label}>
-                        {external ? (
-                          <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
-                            <Icon size={13} className="text-[color:var(--color-text-tertiary)]" />
-                            {label}
-                          </a>
-                        ) : (
-                          <Link href={href} className={cls}>
-                            <Icon size={13} className="text-[color:var(--color-text-tertiary)]" />
-                            {label}
-                          </Link>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </>
-            )}
           </div>
         ))}
       </div>
@@ -315,28 +277,6 @@ export function Footer() {
               <span>
                 {currency} {symbol}
               </span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              {socialLinks.map(({ icon: Icon, label, href, external }) => {
-                const cls =
-                  "inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] text-[color:var(--color-text-secondary)] transition-all hover:border-[color:var(--color-primary)]/60 hover:text-[color:var(--color-primary)]";
-                return external ? (
-                  <a
-                    key={label}
-                    href={href}
-                    aria-label={label}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cls}
-                  >
-                    <Icon size={14} />
-                  </a>
-                ) : (
-                  <Link key={label} href={href} aria-label={label} className={cls}>
-                    <Icon size={14} />
-                  </Link>
-                );
-              })}
             </div>
           </div>
         </div>

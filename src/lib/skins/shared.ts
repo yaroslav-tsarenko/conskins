@@ -79,6 +79,13 @@ export function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+// Hard ceiling for what any single listing may cost. Listing prices are stored
+// in USD; the business rule is expressed in EUR (max €4,000). We convert with
+// the platform's base EUR→USD rate (see CurrencyProvider DEFAULT_RATES) so the
+// displayed EUR price stays at or below the cap.
+export const MAX_LISTING_PRICE_EUR = 4000;
+export const MAX_LISTING_PRICE_USD = round2(MAX_LISTING_PRICE_EUR * 1.08);
+
 export const CATEGORY_LABELS: Record<string, string> = {
   Rifles: "Rifles",
   Pistols: "Pistols",

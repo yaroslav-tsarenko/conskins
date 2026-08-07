@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { Modal } from "@/components/ui/Modal";
-import { CountUp } from "@/components/home/CountUp";
 import type { CatalogItem, CatalogResult } from "@/lib/skins/queries";
 import { useSkinPrice } from "@/components/shared/SkinPrice";
-import { useCurrency } from "@/providers/CurrencyProvider";
 
 const STORAGE_KEY = "conskins:loadout:v1";
 
@@ -59,7 +57,6 @@ function loadStored(): Loadout {
 
 export function LoadoutBuilder() {
   const fmt = useSkinPrice();
-  const { symbol, convertFrom } = useCurrency();
   const [side, setSide] = useState<Side>("t");
   const [loadout, setLoadout] = useState<Loadout>(EMPTY);
   const [ready, setReady] = useState(false);
@@ -129,11 +126,7 @@ export function LoadoutBuilder() {
               Total value
             </div>
             <div className="tnum font-display text-xl font-extrabold text-[color:var(--color-primary)]">
-              {ready ? (
-                <CountUp value={convertFrom(totals.value, "USD")} decimals={2} prefix={symbol} duration={600} />
-              ) : (
-                "—"
-              )}
+              {ready ? fmt(totals.value) : "—"}
             </div>
           </div>
           {totals.count > 0 && (

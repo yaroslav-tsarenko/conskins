@@ -17,7 +17,7 @@ import {
   type ParsedSihName,
   type SkinCategory,
 } from "./sih-source";
-import { round2 } from "./shared";
+import { round2, MAX_LISTING_PRICE_USD } from "./shared";
 
 export interface SihImportOptions {
   dryRun?: boolean;
@@ -109,12 +109,26 @@ export async function importSihSkins(opts: SihImportOptions = {}): Promise<SihIm
     await Promise.all(
       batch.map(async ([baseName, group]) => {
         try {
-          const first = group[0];
+          // Enforce the platform price ceiling: drop any listing above the cap so
+          // the catalog never carries a skin worth more than €4,000.
+          const kept = group.filter((g) => round2(g.item.price) <= MAX_LISTING_PRICE_USD);
+          if (kept.length === 0) {
+            // Every variant of this skin is over the cap — remove it entirely.
+            if (!dryRun) {
+              await prisma.skinListing.deleteMany({
+                where: { skin: { externalId: `sih:${baseName}` } },
+              });
+              await prisma.skin.deleteMany({ where: { externalId: `sih:${baseName}` } });
+            }
+            return;
+          }
+
+          const first = kept[0];
           const category = first.category;
           const enrich = enrichment.get(baseName);
           const color = first.item.color;
 
-          const prices = group.map((g) => round2(g.item.price));
+          const prices = kept.map((g) => round2(g.item.price));
           const lowestPrice = Math.min(...prices);
 
           const skinData = {
@@ -129,8 +143,8 @@ export async function importSihSkins(opts: SihImportOptions = {}): Promise<SihIm
             minFloat: enrich?.min_float ?? 0,
             maxFloat: enrich?.max_float ?? 1,
             imageUrl: enrich?.image ?? first.item.image ?? null,
-            hasStatTrak: group.some((g) => g.parsed.isStatTrak),
-            hasSouvenir: group.some((g) => g.parsed.isSouvenir),
+            hasStatTrak: kept.some((g) => g.parsed.isStatTrak),
+            hasSouvenir: kept.some((g) => g.parsed.isSouvenir),
             isKnife: isKnifeCategory(category),
             isGloves: isGlovesCategory(category),
             phases: null as Prisma.InputJsonValue | null,
@@ -144,13 +158,13 @@ export async function importSihSkins(opts: SihImportOptions = {}): Promise<SihIm
               ...skinData,
               phases: skinData.phases ?? undefined,
               lowestPrice,
-              listingCount: group.length,
+              listingCount: kept.length,
             },
             update: {
               ...skinData,
               phases: skinData.phases ?? undefined,
               lowestPrice,
-              listingCount: group.length,
+              listingCount: kept.length,
             },
             select: { id: true },
           });
@@ -158,7 +172,7 @@ export async function importSihSkins(opts: SihImportOptions = {}): Promise<SihIm
           // Replace this skin's listings with the current SIH snapshot.
           await prisma.skinListing.deleteMany({ where: { skinId: skin.id } });
           await prisma.skinListing.createMany({
-            data: group.map((g) => {
+            data: kept.map((g) => {
               const price = round2(g.item.price);
               const steamPrice =
                 typeof g.item.steam === "number" ? round2(g.item.steam) : null;
@@ -187,7 +201,7 @@ export async function importSihSkins(opts: SihImportOptions = {}): Promise<SihIm
           });
 
           skinCount++;
-          listingCount += group.length;
+          listingCount += kept.length;
         } catch (err) {
           errors.push({ name: baseName, error: err instanceof Error ? err.message : String(err) });
         }

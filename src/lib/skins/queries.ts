@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { seededRng, round2, type ExteriorCode } from "./shared";
+import { seededRng, round2, MAX_LISTING_PRICE_USD, type ExteriorCode } from "./shared";
 
 export interface CatalogFilters {
   search?: string;
@@ -84,11 +84,11 @@ export function buildListingWhere(f: CatalogFilters): Prisma.SkinListingWhereInp
     ];
   }
 
-  if (f.priceMin != null || f.priceMax != null) {
-    where.price = {};
-    if (f.priceMin != null) where.price.gte = f.priceMin;
-    if (f.priceMax != null) where.price.lte = f.priceMax;
-  }
+  // Never surface a listing above the platform price ceiling, whatever the DB holds.
+  const priceMax =
+    f.priceMax != null ? Math.min(f.priceMax, MAX_LISTING_PRICE_USD) : MAX_LISTING_PRICE_USD;
+  where.price = { lte: priceMax };
+  if (f.priceMin != null) where.price.gte = f.priceMin;
   if (f.floatMin != null || f.floatMax != null) {
     where.float = {};
     if (f.floatMin != null) where.float.gte = f.floatMin;
@@ -216,15 +216,16 @@ export interface MarketStats {
 
 // Aggregate marketplace figures for the homepage stats strip & analytics page.
 export async function getMarketStats(): Promise<MarketStats> {
+  const priceCeiling = { lte: MAX_LISTING_PRICE_USD };
   const [totalListings, totalSkins, agg, discountAgg] = await Promise.all([
-    prisma.skinListing.count({ where: { status: "available" } }),
+    prisma.skinListing.count({ where: { status: "available", price: priceCeiling } }),
     prisma.skin.count(),
     prisma.skinListing.aggregate({
-      where: { status: "available" },
+      where: { status: "available", price: priceCeiling },
       _sum: { price: true },
     }),
     prisma.skinListing.aggregate({
-      where: { status: "available", discountPct: { gt: 0 } },
+      where: { status: "available", discountPct: { gt: 0 }, price: priceCeiling },
       _avg: { discountPct: true },
     }),
   ]);
@@ -254,6 +255,7 @@ export async function getSkinSuggestions(query: string, limit = 8): Promise<Skin
     where: {
       name: { contains: q, mode: "insensitive" },
       listingCount: { gt: 0 },
+      lowestPrice: { lte: MAX_LISTING_PRICE_USD },
     },
     orderBy: [{ listingCount: "desc" }, { lowestPrice: "asc" }],
     take: Math.min(12, Math.max(1, limit)),
@@ -284,7 +286,7 @@ export async function getSkinDetail(skinId: string) {
     where: { id: skinId },
     include: {
       listings: {
-        where: { status: "available" },
+        where: { status: "available", price: { lte: MAX_LISTING_PRICE_USD } },
         orderBy: { price: "asc" },
       },
     },
@@ -382,7 +384,7 @@ export interface TickerListing {
 // Newest available listings — powers the live market ticker on the homepage.
 export async function getRecentListings(limit = 18): Promise<TickerListing[]> {
   const rows = await prisma.skinListing.findMany({
-    where: { status: "available" },
+    where: { status: "available", price: { lte: MAX_LISTING_PRICE_USD } },
     orderBy: { createdAt: "desc" },
     take: limit,
     select: {
@@ -417,7 +419,7 @@ export interface RarityBucket {
 export async function getRarityBreakdown(): Promise<RarityBucket[]> {
   const rows = await prisma.skin.groupBy({
     by: ["rarity"],
-    where: { listingCount: { gt: 0 } },
+    where: { listingCount: { gt: 0 }, lowestPrice: { lte: MAX_LISTING_PRICE_USD } },
     _count: { _all: true },
     _min: { lowestPrice: true },
   });
@@ -444,7 +446,7 @@ export interface CategoryShowcaseEntry {
 export async function getCategoryShowcase(): Promise<CategoryShowcaseEntry[]> {
   const groups = await prisma.skin.groupBy({
     by: ["category"],
-    where: { listingCount: { gt: 0 } },
+    where: { listingCount: { gt: 0 }, lowestPrice: { lte: MAX_LISTING_PRICE_USD } },
     _count: { _all: true },
     _min: { lowestPrice: true },
   });
@@ -452,7 +454,12 @@ export async function getCategoryShowcase(): Promise<CategoryShowcaseEntry[]> {
   const heroes = await Promise.all(
     groups.map((g) =>
       prisma.skin.findFirst({
-        where: { category: g.category, listingCount: { gt: 0 }, imageUrl: { not: null } },
+        where: {
+          category: g.category,
+          listingCount: { gt: 0 },
+          imageUrl: { not: null },
+          lowestPrice: { lte: MAX_LISTING_PRICE_USD },
+        },
         orderBy: { lowestPrice: "desc" },
         select: { id: true, name: true, imageUrl: true, rarityColor: true },
       }),
@@ -490,7 +497,11 @@ export interface CollectionSummary {
 export async function getCollections(limit?: number): Promise<CollectionSummary[]> {
   const groups = await prisma.skin.groupBy({
     by: ["collection"],
-    where: { collection: { not: null }, listingCount: { gt: 0 } },
+    where: {
+      collection: { not: null },
+      listingCount: { gt: 0 },
+      lowestPrice: { lte: MAX_LISTING_PRICE_USD },
+    },
     _count: { _all: true },
     _min: { lowestPrice: true },
     orderBy: { _count: { collection: "desc" } },
@@ -500,7 +511,12 @@ export async function getCollections(limit?: number): Promise<CollectionSummary[
   const heroes = await Promise.all(
     groups.map((g) =>
       prisma.skin.findFirst({
-        where: { collection: g.collection, listingCount: { gt: 0 }, imageUrl: { not: null } },
+        where: {
+          collection: g.collection,
+          listingCount: { gt: 0 },
+          imageUrl: { not: null },
+          lowestPrice: { lte: MAX_LISTING_PRICE_USD },
+        },
         orderBy: { lowestPrice: "desc" },
         select: { id: true, name: true, imageUrl: true, rarityColor: true },
       }),
@@ -566,7 +582,7 @@ export async function getRecentSales(limit = 20): Promise<RecentSale[]> {
       },
     }),
     prisma.skinListing.findMany({
-      where: { status: "available" },
+      where: { status: "available", price: { lte: MAX_LISTING_PRICE_USD } },
       orderBy: { discountPct: "desc" },
       take: take * 2,
       select: {

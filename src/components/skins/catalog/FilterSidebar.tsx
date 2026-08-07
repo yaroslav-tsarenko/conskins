@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
-import { EXTERIORS, RARITY_TIERS, type ExteriorCode } from "@/lib/skins/shared";
+import {
+  EXTERIORS,
+  RARITY_TIERS,
+  MAX_LISTING_PRICE_USD,
+  type ExteriorCode,
+} from "@/lib/skins/shared";
 import { RangeSlider } from "@/components/ui/RangeSlider";
 import { FilterGroup, ChipButton, Toggle, TextFilterInput } from "./filterPrimitives";
 import type { Facets, FiltersState, PatchFilters } from "./types";
@@ -12,7 +17,7 @@ const RARITIES = Object.entries(RARITY_TIERS)
   .sort((a, b) => a[1].order - b[1].order)
   .map(([name, meta]) => ({ name, color: meta.color }));
 
-const PRICE_CAP = 3000;
+const PRICE_CAP = MAX_LISTING_PRICE_USD;
 
 // Wear-band gradient for the float track (FN→BS canonical wear colors).
 const WEAR_TRACK =
