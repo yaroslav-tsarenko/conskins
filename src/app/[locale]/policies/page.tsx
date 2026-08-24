@@ -5,14 +5,15 @@ export const metadata = { title: "Policies — ConSkins" };
 
 const policies = [
   { label: "Terms and Conditions", href: "/policies/terms" },
+  { label: "Billing, Refunds & Chargebacks Policy", href: "/policies/billing" },
   { label: "Digital Item Delivery & Steam Trade Policy", href: "/policies/shipping" },
-  { label: "ConSkins Balance, Payments & Pricing Policy", href: "/policies/payment" },
-  { label: "Refund, Cancellation & Failed Delivery Policy", href: "/policies/returns" },
-  { label: "Acceptable Use, Fraud Prevention & Account Security Policy", href: "/policies/acceptable-use" },
   { label: "KYC & Sanctions Policy", href: "/policies/kyc" },
+  { label: "Acceptable Use, Fraud Prevention & Account Security Policy", href: "/policies/acceptable-use" },
   { label: "Privacy Policy", href: "/policies/privacy" },
   { label: "Cookie Policy", href: "/policies/cookies" },
   { label: "Complaints & Dispute Resolution Policy", href: "/policies/complaints" },
+  { label: "Virtual Item & Service Risk Disclosure", href: "/policies/risk-disclosure" },
+  { label: "Checkout Withdrawal Waiver", href: "/policies/withdrawal-waiver" },
 ];
 
 export default function PoliciesIndexPage() {
