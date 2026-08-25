@@ -53,8 +53,22 @@ const groups: Group[] = [
       { href: "/how-it-works", label: "How it works" },
       { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact us" },
-      { href: "/policies/terms", label: "Terms of service" },
-      { href: "/policies/privacy", label: "Privacy policy" },
+    ],
+  },
+  {
+    key: "legal",
+    title: "Legal",
+    items: [
+      { href: "/policies/terms", label: "Terms and Conditions" },
+      { href: "/policies/billing", label: "Billing, Refunds & Chargebacks" },
+      { href: "/policies/shipping", label: "Delivery & Steam Trades" },
+      { href: "/policies/kyc", label: "KYC & Sanctions" },
+      { href: "/policies/acceptable-use", label: "Acceptable Use & Security" },
+      { href: "/policies/privacy", label: "Privacy Policy" },
+      { href: "/policies/cookies", label: "Cookie Policy" },
+      { href: "/policies/complaints", label: "Complaints & Disputes" },
+      { href: "/policies/risk-disclosure", label: "Risk Disclosure" },
+      { href: "/policies/withdrawal-waiver", label: "Withdrawal Waiver" },
     ],
   },
 ];
@@ -155,7 +169,7 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)]" role="contentinfo">
       {/* ── Brand + navigation tier ─────────────────────────────── */}
-      <div className="mx-auto grid max-w-[var(--max-width)] gap-x-10 gap-y-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.3fr_repeat(3,1fr)] lg:px-8">
+      <div className="mx-auto grid max-w-[var(--max-width)] gap-x-10 gap-y-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.3fr_repeat(4,1fr)] lg:px-8">
         {/* Brand block */}
         <div className="flex flex-col gap-5">
           <Link href="/" aria-label={brand.displayName}>
@@ -203,7 +217,7 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
-              {group.key === "company" && (
+              {group.key === "legal" && (
                 <li>
                   <button
                     type="button"
