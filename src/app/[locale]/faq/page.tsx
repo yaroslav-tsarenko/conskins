@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const faqs = [
   {
     q: "How fast do I get my skin?",
-    a: "As soon as your payment clears, our bot sends a Steam trade offer to your account — usually within seconds. Just accept the offer and the skin lands in your inventory instantly.",
+    a: "Once your order is processed, we send a Steam trade offer to your account — usually within minutes, and always within 24 hours. Just accept the offer and the skin lands in your inventory.",
   },
   {
     q: "What are trade holds and why do they happen?",
@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "How does payment work?",
-    a: "Purchases are paid from your ConSkins wallet balance. Your funds are only captured once the trade offer is confirmed, so you're covered by buyer protection on every trade.",
+    a: "You top up your ConSkins wallet balance in advance, and purchases are paid from that balance. If an order can't be delivered, the full amount is restored to your balance.",
   },
   {
     q: "Can I cancel a purchase?",

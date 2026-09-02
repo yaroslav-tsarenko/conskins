@@ -15,7 +15,7 @@ import {
 
 export const metadata: Metadata = {
   title: "How It Works",
-  description: `How buying CS2 skins works on ${brand.displayName} — link Steam, pay from balance, receive your skin in seconds.`,
+  description: `How buying CS2 skins works on ${brand.displayName} — link Steam, pay from balance, and receive your skin, usually within minutes.`,
 };
 
 const steps = [
@@ -27,12 +27,12 @@ const steps = [
   {
     Icon: Wallet,
     title: "Pay from balance",
-    body: "Top up your ConSkins wallet and buy in a click. Your funds are only captured once the trade offer is confirmed — so every purchase is protected.",
+    body: "Top up your ConSkins wallet, then buy any skin in a click — the price is taken from your ConSkins balance. If an order can't be delivered, the amount is restored to your balance.",
   },
   {
     Icon: PackageCheck,
-    title: "Receive in seconds",
-    body: "Our bot sends a Steam trade offer the moment payment clears. Accept it and the skin lands in your inventory — usually within seconds.",
+    title: "Delivered to your inventory",
+    body: "Once your order is processed, we send a Steam trade offer. Accept it and the skin lands in your inventory — usually within minutes, and always within 24 hours.",
   },
 ];
 
@@ -40,12 +40,12 @@ const assurances = [
   {
     Icon: ShieldCheck,
     title: "Buyer protection",
-    body: "Your payment is only captured once the Steam trade offer is confirmed. If delivery can't be completed, your balance is restored.",
+    body: "Purchases are paid from your ConSkins balance. If an order can't be delivered, the full amount is restored to your balance.",
   },
   {
     Icon: Link2,
     title: "Verified delivery",
-    body: "Every skin is delivered through our secure trading system straight to your Steam inventory — no manual middlemen involved.",
+    body: "Every skin is delivered straight to your Steam inventory through our secure trading system and trusted fulfilment providers.",
   },
   {
     Icon: Repeat,
@@ -63,7 +63,7 @@ const faqs = [
   {
     Icon: ShieldCheck,
     q: "Is my purchase protected?",
-    a: "Yes. Funds are only captured on a confirmed trade offer, and every purchase is covered by buyer protection end to end.",
+    a: "Yes. Every purchase is paid from your ConSkins balance, and if an order can't be delivered the full amount is restored to your balance.",
   },
   {
     Icon: Link2,
@@ -85,8 +85,8 @@ export default function HowItWorksPage() {
           <span className="text-[color:var(--color-accent)]">three steps</span>.
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[color:var(--color-text-secondary)] sm:text-lg">
-          No middlemen, no waiting around. Here&apos;s exactly what happens from
-          browse to inventory.
+          Here&apos;s exactly what happens from browse to inventory — simple,
+          secure and transparent.
         </p>
       </section>
 
@@ -171,8 +171,8 @@ export default function HowItWorksPage() {
           Start trading in minutes
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm opacity-90 sm:text-base">
-          Sign up with email, link Steam at checkout, and get your skin in
-          seconds.
+          Sign up with email, link Steam at checkout, and get your skin —
+          usually within minutes.
         </p>
         <Link
           href="/catalog"

@@ -16,7 +16,7 @@ const POSTS = [
     tag: "Balance",
     accent: "var(--color-primary)",
     title: "Top up and buy in one click",
-    text: "Load your ConSkins balance once, then check out instantly — funds are only captured on a confirmed trade.",
+    text: "Load your ConSkins balance once, then check out in a click — purchases are paid from your balance.",
     href: "/how-it-works",
     cta: "See how it works",
   },

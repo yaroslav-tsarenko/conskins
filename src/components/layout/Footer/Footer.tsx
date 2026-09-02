@@ -177,7 +177,7 @@ export function Footer() {
           </Link>
           <p className="max-w-sm text-[13.5px] leading-relaxed text-[color:var(--color-text-secondary)]">
             {brand.tagline} Browse thousands of skins with live float, pattern and
-            cross-market price data, then trade instantly through your Steam account.
+            cross-market price data, then trade securely through your Steam account.
           </p>
 
           <div className="flex flex-wrap gap-2">

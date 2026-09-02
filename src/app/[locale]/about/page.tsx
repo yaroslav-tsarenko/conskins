@@ -29,12 +29,12 @@ const values = [
   {
     Icon: Zap,
     title: "Speed by default",
-    body: "Our trade bot fires the moment a payment clears — most skins land in your inventory within seconds, not hours.",
+    body: "Once your order is processed, we send the trade offer — most skins land in your inventory within minutes, and always within 24 hours.",
   },
   {
     Icon: ShieldCheck,
     title: "Fair & protected",
-    body: "Funds are only captured once a trade offer is confirmed. Every purchase is covered by buyer protection, end to end.",
+    body: "Purchases are paid from your ConSkins balance, and if an order can't be delivered the full amount is restored to your balance.",
   },
   {
     Icon: BarChart3,
@@ -112,9 +112,9 @@ export default function AboutPage() {
             </p>
             <p>
               So we built a marketplace around three ideas: show everything, move
-              instantly, and protect every trade. Prices, float and pattern are on
+              fast, and protect every trade. Prices, float and pattern are on
               the table before you commit. Our bot handles delivery automatically.
-              And your balance is only ever spent on a confirmed trade.
+              And if an order can&apos;t be delivered, your balance is restored.
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function AboutPage() {
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm opacity-90 sm:text-base">
           Thousands of listings with live float and cross-market pricing, ready
-          to trade instantly.
+          to trade.
         </p>
         <Link
           href="/catalog"

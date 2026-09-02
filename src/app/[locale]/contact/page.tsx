@@ -265,9 +265,9 @@ export default function ContactPage() {
             </h3>
             <div className="flex flex-col gap-3">
               {[
-                { q: "How fast is skin delivery?", a: "Usually seconds — our bot sends the trade offer the moment payment clears." },
+                { q: "How fast is skin delivery?", a: "Usually within minutes once your order is processed, and always within 24 hours." },
                 { q: "Can I get a refund?", a: "Yes, if the trade offer hasn't been sent. Once delivered, trades are final." },
-                { q: "Why is there a trade hold?", a: "Steam holds trades when Mobile Guard isn't active on your account. Enable it to receive items instantly." },
+                { q: "Why is there a trade hold?", a: "Steam holds trades when Mobile Guard isn't active on your account. Enable it to receive items without a hold." },
                 { q: "How do I track my purchase?", a: "Check Account → My Trades for a live delivery status." },
               ].map((faq, i) => (
                 <div key={i} className="rounded-lg bg-[color:var(--color-bg-secondary)] p-3 text-[13px]">

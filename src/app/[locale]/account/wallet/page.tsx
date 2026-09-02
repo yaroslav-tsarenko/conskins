@@ -115,7 +115,7 @@ export default function WalletPage() {
         <div>
           <h1 className="font-display text-2xl font-bold text-[color:var(--color-text)]">Wallet</h1>
           <p className="text-sm text-[color:var(--color-text-secondary)]">
-            Top up your balance to buy skins instantly.
+            Top up your balance to buy skins in a click.
           </p>
         </div>
       </div>
