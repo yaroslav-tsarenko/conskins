@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Wallet, Plus, Check, Loader2, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { useCallback, useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { Wallet, Plus, Check, Loader2, ArrowDownLeft, ArrowUpRight, AlertCircle, Clock } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -27,9 +29,11 @@ const TYPE_LABELS: Record<Tx["type"], string> = {
   ADJUSTMENT: "Adjustment",
 };
 
-export default function WalletPage() {
+function WalletContent() {
   const { currency, symbol, convert } = useCurrency();
   const { refresh } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [balanceEur, setBalanceEur] = useState(0);
   const [transactions, setTransactions] = useState<Tx[]>([]);
@@ -40,6 +44,11 @@ export default function WalletPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
+
+  const [returnBanner, setReturnBanner] = useState<{
+    type: "success" | "pending" | "error";
+    message: string;
+  } | null>(null);
 
   const fmt = useCallback(
     (value: number) =>
@@ -69,6 +78,61 @@ export default function WalletPage() {
     load();
   }, [load]);
 
+  // Handle return from Transfermit payment gateway
+  useEffect(() => {
+    const status = searchParams.get("status");
+    const pmt = searchParams.get("pmt");
+    const ref = searchParams.get("ref");
+
+    if (status === "return" && (pmt || ref)) {
+      queueMicrotask(() => {
+        setReturnBanner({
+          type: "pending",
+          message: "Verifying payment with Transfermit...",
+        });
+      });
+
+      const params = new URLSearchParams();
+      if (pmt) params.set("pmt", pmt);
+      if (ref) params.set("ref", ref);
+
+      fetch(`/api/wallet/topup/verify?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "COMPLETED") {
+            setReturnBanner({
+              type: "success",
+              message: "Payment completed successfully! Your wallet balance has been updated.",
+            });
+            load();
+            refresh();
+          } else if (data.status === "FAILED") {
+            setReturnBanner({
+              type: "error",
+              message: "Payment was cancelled or declined.",
+            });
+            load();
+          } else {
+            setReturnBanner({
+              type: "pending",
+              message: "Payment is being processed by Transfermit. Funds will appear shortly.",
+            });
+            load();
+          }
+        })
+        .catch(() => {
+          setReturnBanner({
+            type: "pending",
+            message: "Payment verification in progress. Please refresh in a few moments.",
+          });
+          load();
+        });
+
+      // Clear search params cleanly without reloading
+      router.replace("/account/wallet");
+    }
+  }, [searchParams, router, load, refresh]);
+
   const amount = selected === "custom" ? Number(custom) : selected;
   const amountValid = Number.isFinite(amount) && amount >= MIN_AMOUNT;
 
@@ -91,11 +155,12 @@ export default function WalletPage() {
         setError(data.error ?? "Could not complete top-up.");
         return;
       }
-      // Real gateway would return a redirectUrl; the stub settles instantly.
+      // Transfermit real gateway returns a redirectUrl
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl;
         return;
       }
+      // Stub gateway settles instantly
       setJustAdded(true);
       setCustom("");
       await Promise.all([load(), refresh()]);
@@ -120,6 +185,31 @@ export default function WalletPage() {
         </div>
       </div>
 
+      {/* Return status banner */}
+      {returnBanner && (
+        <div
+          className={`mt-6 flex items-center gap-3 rounded-2xl border p-4 text-sm font-medium ${
+            returnBanner.type === "success"
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              : returnBanner.type === "error"
+              ? "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+          }`}
+        >
+          {returnBanner.type === "success" && <Check size={18} className="shrink-0" />}
+          {returnBanner.type === "error" && <AlertCircle size={18} className="shrink-0" />}
+          {returnBanner.type === "pending" && <Clock size={18} className="shrink-0 animate-spin" />}
+          <span className="flex-1">{returnBanner.message}</span>
+          <button
+            type="button"
+            onClick={() => setReturnBanner(null)}
+            className="text-xs font-semibold opacity-70 hover:opacity-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Balance card */}
       <div className="mt-6 overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-gradient-to-br from-[color:var(--color-primary-tint)] to-[color:var(--color-bg-elevated)] p-6">
         <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--color-text-secondary)]">
@@ -135,7 +225,7 @@ export default function WalletPage() {
         <h2 className="font-display text-lg font-bold text-[color:var(--color-text)]">Add funds</h2>
         <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">
           Choose a pack or enter any amount (min {symbol}
-          {MIN_AMOUNT}). Charged in {currency}.
+          {MIN_AMOUNT}). Charged via Transfermit in {currency}.
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
@@ -220,6 +310,9 @@ export default function WalletPage() {
           <ul className="space-y-2">
             {transactions.map((t) => {
               const credit = t.amountEur >= 0;
+              const isPending = t.status === "PENDING";
+              const isFailed = t.status === "FAILED";
+
               return (
                 <li
                   key={t.id}
@@ -228,16 +321,36 @@ export default function WalletPage() {
                   <div className="flex min-w-0 items-center gap-3">
                     <span
                       className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                        credit
+                        isPending
+                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                          : isFailed
+                          ? "bg-[color:var(--color-danger)]/15 text-[color:var(--color-danger)]"
+                          : credit
                           ? "bg-[color:var(--color-success)]/15 text-[color:var(--color-success)]"
                           : "bg-[color:var(--color-danger)]/15 text-[color:var(--color-danger)]"
                       }`}
                     >
-                      {credit ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
+                      {isPending ? (
+                        <Clock size={16} />
+                      ) : credit ? (
+                        <ArrowDownLeft size={16} />
+                      ) : (
+                        <ArrowUpRight size={16} />
+                      )}
                     </span>
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-[color:var(--color-text)]">
-                        {t.description ?? TYPE_LABELS[t.type]}
+                      <div className="flex items-center gap-2 truncate text-sm font-semibold text-[color:var(--color-text)]">
+                        <span className="truncate">{t.description ?? TYPE_LABELS[t.type]}</span>
+                        {isPending && (
+                          <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                            Pending
+                          </span>
+                        )}
+                        {isFailed && (
+                          <span className="rounded bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
+                            Failed
+                          </span>
+                        )}
                       </div>
                       <div className="font-mono text-[11px] text-[color:var(--color-text-tertiary)]">
                         {new Date(t.createdAt).toLocaleString()}
@@ -246,11 +359,17 @@ export default function WalletPage() {
                   </div>
                   <span
                     className={`shrink-0 font-mono text-sm font-bold tabular-nums ${
-                      credit ? "text-[color:var(--color-success)]" : "text-[color:var(--color-text)]"
+                      isPending
+                        ? "text-amber-600 dark:text-amber-400"
+                        : isFailed
+                        ? "text-[color:var(--color-text-tertiary)] line-through"
+                        : credit
+                        ? "text-[color:var(--color-success)]"
+                        : "text-[color:var(--color-text)]"
                     }`}
                   >
-                    {credit ? "+" : "−"}
-                    {fmt(convert(Math.abs(t.amountEur)))}
+                    {isPending ? "" : credit ? "+" : "−"}
+                    {fmt(convert(Math.abs(t.sourceAmount ? t.sourceAmount : t.amountEur)))}
                   </span>
                 </li>
               );
@@ -259,5 +378,13 @@ export default function WalletPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-[color:var(--color-text-tertiary)]">Loading wallet…</div>}>
+      <WalletContent />
+    </Suspense>
   );
 }
