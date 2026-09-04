@@ -42,17 +42,50 @@ export async function POST(req: Request) {
     );
   }
 
-  // Charge the (currently stubbed) gateway, then convert to EUR and credit.
-  const intent = await activeTopupGateway.createIntent({ userId: user.id, amount, currency });
+  // Extract client IP and host
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || process.env.NEXT_PUBLIC_SITE_URL || "localhost:3500";
+  const proto = req.headers.get("x-forwarded-proto") || (host.startsWith("localhost") ? "http" : "https");
+  const baseUrl = (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || `${proto}://${host}`).replace(/\/$/, "");
+  const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "127.0.0.1";
 
-  // Real gateway path: hand the checkout URL back to the client. The wallet is
-  // credited later from the provider webhook, not here.
-  if (intent.kind === "redirect") {
-    return NextResponse.json({ ok: true, redirectUrl: intent.url });
-  }
+  const defaultAddress = user.addresses?.[0];
+  const customerName = user.name || user.firstName || user.steamAccount?.personaName || "Customer";
 
-  const amountEur = await toEur(amount, currency);
   try {
+    const intent = await activeTopupGateway.createIntent({
+      userId: user.id,
+      amount,
+      currency,
+      customer: {
+        referenceId: user.id,
+        email: user.email || `${user.steamAccount?.steamId64 || user.id}@conskins.com`,
+        name: customerName,
+        firstName: user.firstName || customerName,
+        lastName: user.lastName || "",
+        phone: user.phone || defaultAddress?.phone || undefined,
+        ip: clientIp,
+      },
+      billingAddress: defaultAddress
+        ? {
+            addressLine1: defaultAddress.address1,
+            addressLine2: defaultAddress.address2 || undefined,
+            city: defaultAddress.city,
+            countryCode: defaultAddress.country,
+            postalCode: defaultAddress.postalCode,
+            state: defaultAddress.province || undefined,
+          }
+        : undefined,
+      returnUrl: `${baseUrl}/account/wallet?status=return`,
+      webhookUrl: `${baseUrl}/api/webhooks/transfermit`,
+    });
+
+    // Real gateway path (Transfermit): return redirectUrl for checkout / 3DSecure
+    if (intent.kind === "redirect") {
+      return NextResponse.json({ ok: true, redirectUrl: intent.url, providerRef: intent.providerRef });
+    }
+
+    // Stub gateway path: charge is settled immediately
+    const amountEur = await toEur(amount, currency);
     const result = await creditEur({
       userId: user.id,
       amountEur,
@@ -62,17 +95,20 @@ export async function POST(req: Request) {
       sourceCurrency: currency,
       description: `Top-up ${amount} ${currency}`,
     });
+
     return NextResponse.json({
       ok: true,
       balanceEur: Number(result.transaction.balanceAfter),
       creditedEur: amountEur,
     });
   } catch (err) {
+    console.error("[Wallet Topup] Error processing intent:", err);
     if (err instanceof WalletError) {
       return NextResponse.json({ code: err.code, error: err.message }, { status: 400 });
     }
+    const message = err instanceof Error ? err.message : "Could not complete top-up. Try again.";
     return NextResponse.json(
-      { code: "error", error: "Could not complete top-up. Try again." },
+      { code: "error", error: message },
       { status: 500 },
     );
   }

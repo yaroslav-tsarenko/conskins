@@ -48,10 +48,39 @@ type LedgerInput = {
 export async function applyLedger(input: LedgerInput) {
   return prisma.$transaction(async (tx) => {
     if (input.providerRef) {
-      const dupe = await tx.walletTransaction.findUnique({
+      const existing = await tx.walletTransaction.findUnique({
         where: { providerRef: input.providerRef },
       });
-      if (dupe) return { transaction: dupe, replayed: true as const };
+      if (existing) {
+        if (existing.status === "COMPLETED") {
+          return { transaction: existing, replayed: true as const };
+        }
+
+        // Complete the pending transaction
+        const wallet = await tx.wallet.upsert({
+          where: { userId: input.userId },
+          create: { userId: input.userId },
+          update: {},
+        });
+        const current = toNumber(wallet.balance);
+        const next = Math.round((current + input.amountEur) * 100) / 100;
+        const updatedWallet = await tx.wallet.update({
+          where: { id: wallet.id },
+          data: { balance: next },
+        });
+        const updatedTx = await tx.walletTransaction.update({
+          where: { id: existing.id },
+          data: {
+            status: "COMPLETED",
+            amount: input.amountEur,
+            balanceAfter: next,
+            description: input.description ?? existing.description,
+            sourceAmount: input.sourceAmount ?? existing.sourceAmount,
+            sourceCurrency: input.sourceCurrency ?? existing.sourceCurrency,
+          },
+        });
+        return { transaction: updatedTx, wallet: updatedWallet, replayed: false as const };
+      }
     }
 
     const wallet = await tx.wallet.upsert({
@@ -88,6 +117,20 @@ export async function applyLedger(input: LedgerInput) {
     });
 
     return { transaction, wallet: updated, replayed: false as const };
+  });
+}
+
+export async function markTopupFailed(providerRef: string, description?: string) {
+  const existing = await prisma.walletTransaction.findUnique({
+    where: { providerRef },
+  });
+  if (!existing || existing.status === "COMPLETED") return null;
+  return prisma.walletTransaction.update({
+    where: { id: existing.id },
+    data: {
+      status: "FAILED",
+      description: description ?? existing.description,
+    },
   });
 }
 

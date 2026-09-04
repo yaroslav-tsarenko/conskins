@@ -1,7 +1,7 @@
 import { spawn, execSync } from "child_process";
 
 const DB_PORTS = [51213, 51214, 51215];
-const NEXT_PORT = 3000;
+const NEXT_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 function killPort(port) {
   try {
