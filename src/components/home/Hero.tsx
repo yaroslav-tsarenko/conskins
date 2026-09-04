@@ -1,9 +1,8 @@
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
-import { ArrowRight, ShieldCheck, Wallet, Zap, TrendingUp, Users, Repeat, Layers } from "lucide-react";
-import { CountUp } from "./CountUp";
-import { SkinPrice, SkinPriceCountUp } from "@/components/shared/SkinPrice";
-import type { MarketStats, CatalogItem } from "@/lib/skins/queries";
+import { ArrowRight, ShieldCheck, Wallet, Zap } from "lucide-react";
+import { SkinPrice } from "@/components/shared/SkinPrice";
+import type { CatalogItem } from "@/lib/skins/queries";
 
 export interface FeaturedSkinView {
   id: string;
@@ -116,23 +115,7 @@ export function TrendingSkinCard({ featured }: { featured: FeaturedSkinView }) {
   );
 }
 
-export function Hero({
-  stats,
-  floating,
-}: {
-  stats: MarketStats;
-  floating: CatalogItem[];
-}) {
-  const dailyTx = Math.max(120, Math.round(stats.totalListings * 0.6));
-  const activeUsers = Math.max(900, Math.round(stats.totalSkins * 14.7));
-
-  const statItems = [
-    { icon: Layers, label: "Skins available", value: stats.totalListings, decimals: 0, prefix: "", suffix: "+" },
-    { icon: Repeat, label: "Daily transactions", value: dailyTx, decimals: 0, prefix: "", suffix: "" },
-    { icon: Users, label: "Active users", value: activeUsers, decimals: 0, prefix: "", suffix: "" },
-    { icon: TrendingUp, label: "Market volume", value: Math.round(stats.marketValue), decimals: 0, prefix: "$", suffix: "", usd: true },
-  ];
-
+export function Hero({ floating }: { floating: CatalogItem[] }) {
   return (
     <section className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] p-6 sm:p-10 lg:p-14">
       <div
@@ -187,37 +170,6 @@ export function Hero({
             <FloatingCard key={item.listingId} item={item} pose={FLOAT_POSES[i]} />
           ))}
         </div>
-      </div>
-
-      {/* Stats strip */}
-      <div className="relative mt-10 grid grid-cols-2 gap-4 border-t border-[color:var(--color-border)] pt-7 lg:grid-cols-4">
-        {statItems.map((s) => (
-          <div key={s.label} className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-[color:var(--color-primary-tint)] text-[color:var(--color-primary)]">
-              <s.icon size={17} />
-            </span>
-            <div>
-              {"usd" in s && s.usd ? (
-                <SkinPriceCountUp
-                  usd={s.value}
-                  decimals={0}
-                  className="font-mono text-xl font-bold tabular-nums leading-none text-[color:var(--color-text)]"
-                />
-              ) : (
-                <CountUp
-                  value={s.value}
-                  decimals={s.decimals}
-                  prefix={s.prefix}
-                  suffix={s.suffix}
-                  className="font-mono text-xl font-bold tabular-nums leading-none text-[color:var(--color-text)]"
-                />
-              )}
-              <div className="mt-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--color-text-tertiary)]">
-                {s.label}
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </section>
   );

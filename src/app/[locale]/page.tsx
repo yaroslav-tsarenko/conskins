@@ -203,7 +203,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
       <div className="mx-auto w-full max-w-[var(--max-width)] px-4 py-8 sm:px-6 lg:px-8">
         {/* ── Hero ─────────────────────────────────────────────── */}
-        <Hero stats={stats} floating={premium.items.slice(0, 3)} />
+        <Hero floating={premium.items.slice(0, 3)} />
 
         {/* ── Live side modules: recent sales + trending skin ──── */}
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">

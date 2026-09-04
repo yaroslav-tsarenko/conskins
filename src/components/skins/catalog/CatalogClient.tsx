@@ -47,6 +47,17 @@ export function CatalogClient({ facets, locale }: { facets: Facets; locale: stri
     setFilters((prev) => ({ ...DEFAULT_FILTERS, sort: prev.sort }));
   }, []);
 
+  // Sync state when the URL changes from outside (e.g. header nav picking a new
+  // category while already on /catalog). Our own URL writes normalize to the same
+  // query string, so this is a no-op for them and never loops.
+  const paramsKey = params.toString();
+  useEffect(() => {
+    const next = filtersFromParams(new URLSearchParams(paramsKey));
+    setFilters((prev) =>
+      filtersToQueryString(prev) === filtersToQueryString(next) ? prev : next,
+    );
+  }, [paramsKey]);
+
   // Debounce the full serialized query — covers text inputs and slider drags alike.
   const queryString = useDebounced(
     useMemo(() => filtersToQueryString(filters), [filters]),
