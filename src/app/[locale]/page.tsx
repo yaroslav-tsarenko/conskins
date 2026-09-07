@@ -228,7 +228,7 @@ export default async function HomePage({ params }: HomePageProps) {
         {/* ── Live ticker ──────────────────────────────────────── */}
         <section className="mt-10">
           <div className="mb-3 flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[color:var(--color-accent)]">
-            <Radio size={13} /> Live market · newest listings
+            <Radio size={13} /> Live market · newest items
           </div>
           <MarketTicker items={recent} />
         </section>
@@ -238,9 +238,9 @@ export default async function HomePage({ params }: HomePageProps) {
           <BenefitsRow stats={stats} />
         </section>
 
-        {/* ── Featured marketplace tabs ────────────────────────── */}
+        {/* ── Featured items tabs ────────────────────────── */}
         <section className="mt-14">
-          <SectionHeader icon={Flame} eyebrow="Featured marketplace" title="Handpicked for you" />
+          <SectionHeader icon={Flame} eyebrow="Featured items" title="Handpicked for you" />
           <FeaturedTabs initial={deals.items.slice(0, 10)} locale={locale} />
         </section>
 

@@ -20,7 +20,7 @@ export default function LoadoutPage() {
           Build your dream loadout
         </h1>
         <p className="mt-2 max-w-2xl text-[15px] text-[color:var(--color-text-secondary)]">
-          Fill every slot for both sides with live listings and track the total cost as you go.
+          Fill every slot for both sides with live items and track the total cost as you go.
           Your loadout is saved locally — come back any time.
         </p>
       </div>

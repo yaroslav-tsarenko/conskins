@@ -30,7 +30,7 @@ const CURATED = [
   },
   {
     title: "Knives from the vault",
-    description: "Every blade currently listed, cheapest first.",
+    description: "Every blade currently available, cheapest first.",
     href: "/catalog?category=Knives&sort=price_asc",
   },
 ];
@@ -48,7 +48,7 @@ export default async function CollectionsPage() {
           Browse by collection
         </h1>
         <p className="mt-2 max-w-2xl text-[15px] text-[color:var(--color-text-secondary)]">
-          Every case and map drop with live listings — plus curated picks from our traders.
+          Every case and map drop with live items — plus curated picks from our catalogue.
         </p>
       </div>
 

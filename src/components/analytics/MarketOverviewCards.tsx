@@ -5,7 +5,7 @@ import { SkinPriceCountUp } from "@/components/shared/SkinPrice";
 const CARDS = [
   {
     icon: Layers,
-    label: "Items listed",
+    label: "Items available",
     value: (s: MarketStats) => s.totalListings.toLocaleString(),
   },
   {

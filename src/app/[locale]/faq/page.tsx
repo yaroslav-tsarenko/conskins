@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     q: "What are float and pattern?",
-    a: "Float is the exact wear value of a skin (lower is cleaner); pattern index determines the placement of a skin's design. Both are shown live on every listing so you know precisely what you're buying.",
+    a: "Float is the exact wear value of a skin (lower is cleaner); pattern index determines the placement of a skin's design. Both are shown live on every item so you know precisely what you're buying.",
   },
   {
     q: "How do I contact support?",

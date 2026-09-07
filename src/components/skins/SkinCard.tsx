@@ -118,7 +118,7 @@ export function SkinCard({ item, locale = "en" }: { item: CatalogItem; locale?: 
         {/* quick view on hover */}
         <div className="absolute inset-x-2 bottom-2 translate-y-3 opacity-0 transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
           <span className="block rounded-[var(--radius-md)] bg-[color:var(--color-primary)] py-1.5 text-center text-xs font-bold text-[color:var(--color-primary-fg)] shadow-[var(--shadow-glow-volt)]">
-            View listing
+            View item
           </span>
         </div>
       </div>

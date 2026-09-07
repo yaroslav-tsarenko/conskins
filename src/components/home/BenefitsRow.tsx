@@ -18,9 +18,9 @@ export function BenefitsRow({ stats }: { stats: MarketStats }) {
     },
     {
       icon: Layers,
-      title: "Skins listed",
+      title: "Skins available",
       stat: { value: stats.totalListings, prefix: "", suffix: "+", decimals: 0 },
-      text: "Every listing with verified float & pattern.",
+      text: "Every item with verified float & pattern.",
     },
     {
       icon: Percent,
@@ -30,7 +30,7 @@ export function BenefitsRow({ stats }: { stats: MarketStats }) {
     },
     {
       icon: ShieldCheck,
-      title: "Secure marketplace",
+      title: "Secure store",
       stat: { value: 100, prefix: "", suffix: "%", decimals: 0 },
       text: "Buyer protection on every single trade.",
     },
