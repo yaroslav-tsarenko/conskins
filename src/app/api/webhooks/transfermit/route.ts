@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
           providerRef: paymentId || tx.providerRef || tx.id,
           sourceAmount: amountToCredit,
           sourceCurrency: currency,
-          description: `Top-up ${amountToCredit} ${currency} (Transfermit)`,
+          description: `Top-up ${amountToCredit} ${currency}`,
         });
 
         console.log(`[Transfermit Webhook] Wallet top-up completed for user ${tx.userId}, amount: ${amountToCredit} ${currency}`);

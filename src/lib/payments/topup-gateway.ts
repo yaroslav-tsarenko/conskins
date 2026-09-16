@@ -64,7 +64,7 @@ export class TransfermitTopupGateway implements TopupGateway {
         sourceAmount: intent.amount,
         sourceCurrency: intent.currency,
         provider: this.name,
-        description: `Top-up ${intent.amount} ${intent.currency} (Transfermit)`,
+        description: `Top-up ${intent.amount} ${intent.currency}`,
       },
     });
 

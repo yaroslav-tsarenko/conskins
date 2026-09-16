@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
           providerRef: paymentId,
           sourceAmount: amount,
           sourceCurrency: currency,
-          description: `Top-up ${amount} ${currency} (Transfermit)`,
+          description: `Top-up ${amount} ${currency}`,
         });
 
         const balanceEur = result.wallet ? Number(result.wallet.balance) : Number(wallet.balance);

@@ -88,7 +88,7 @@ function WalletContent() {
       queueMicrotask(() => {
         setReturnBanner({
           type: "pending",
-          message: "Verifying payment with Transfermit...",
+          message: "Verifying payment status...",
         });
       });
 
@@ -115,7 +115,7 @@ function WalletContent() {
           } else {
             setReturnBanner({
               type: "pending",
-              message: "Payment is being processed by Transfermit. Funds will appear shortly.",
+              message: "Payment is being processed. Funds will appear shortly.",
             });
             load();
           }
@@ -225,7 +225,7 @@ function WalletContent() {
         <h2 className="font-display text-lg font-bold text-[color:var(--color-text)]">Add funds</h2>
         <p className="mt-1 text-sm text-[color:var(--color-text-secondary)]">
           Choose a pack or enter any amount (min {symbol}
-          {MIN_AMOUNT}). Charged via Transfermit in {currency}.
+          {MIN_AMOUNT}). Charged in {currency}.
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
