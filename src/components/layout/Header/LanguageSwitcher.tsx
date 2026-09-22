@@ -6,7 +6,7 @@ import { Globe } from "lucide-react";
 import { usePathname, useRouter, type Locale } from "@/i18n/routing";
 import { localeNames, routing } from "@/i18n/routing";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ direction = "down" }: { direction?: "down" | "up" }) {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -46,7 +46,9 @@ export function LanguageSwitcher() {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-full z-50 mt-1.5 min-w-[132px] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] shadow-lg"
+          className={`absolute right-0 z-50 min-w-[132px] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] shadow-lg ${
+            direction === "up" ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          }`}
         >
           {routing.locales.map((code) => (
             <button

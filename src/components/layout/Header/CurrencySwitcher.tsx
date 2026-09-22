@@ -9,7 +9,7 @@ const CURRENCIES: { code: Currency; symbol: string; label: string }[] = [
   { code: "GBP", symbol: "£", label: "GBP (£)" },
 ];
 
-export function CurrencySwitcher() {
+export function CurrencySwitcher({ direction = "down" }: { direction?: "down" | "up" }) {
   const { currency, setCurrency } = useCurrency();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -39,7 +39,9 @@ export function CurrencySwitcher() {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-full z-50 mt-1.5 min-w-[132px] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] shadow-lg"
+          className={`absolute right-0 z-50 min-w-[132px] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] shadow-lg ${
+            direction === "up" ? "bottom-full mb-1.5" : "top-full mt-1.5"
+          }`}
         >
           {CURRENCIES.map((c) => (
             <button

@@ -145,8 +145,8 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
 
             <div className="border-t border-[color:var(--color-border)] px-4 py-4">
               <div className="mb-3 flex items-center gap-1 self-start rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-1.5 py-1">
-                <CurrencySwitcher />
-                <LanguageSwitcher />
+                <CurrencySwitcher direction="up" />
+                <LanguageSwitcher direction="up" />
               </div>
               {user ? (
                 <button
