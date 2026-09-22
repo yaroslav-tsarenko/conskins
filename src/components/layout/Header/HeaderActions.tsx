@@ -20,6 +20,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { useFavorites } from "@/providers/FavoritesProvider";
 import { CurrencySwitcher } from "./CurrencySwitcher";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 
 const ACCOUNT_LINKS = [
@@ -69,9 +70,10 @@ export function HeaderActions() {
         <ThemeToggle />
       </div>
 
-      {/* Currency */}
+      {/* Currency & language */}
       <div className="hidden items-center gap-0.5 rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-1 py-1 md:flex">
         <CurrencySwitcher />
+        <LanguageSwitcher />
       </div>
 
       {/* Favorites */}

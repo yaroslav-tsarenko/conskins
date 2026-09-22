@@ -17,6 +17,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useFavorites } from "@/providers/FavoritesProvider";
 import { ConSkinsLogo } from "../ConSkinsLogo";
 import { CurrencySwitcher } from "./CurrencySwitcher";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MEGA_MENU } from "./MegaMenu";
 import { SearchBar } from "./SearchBar";
 
@@ -145,6 +146,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             <div className="border-t border-[color:var(--color-border)] px-4 py-4">
               <div className="mb-3 flex items-center gap-1 self-start rounded-[var(--radius-lg)] border border-[color:var(--color-border)] bg-[color:var(--color-bg-secondary)] px-1.5 py-1">
                 <CurrencySwitcher />
+                <LanguageSwitcher />
               </div>
               {user ? (
                 <button

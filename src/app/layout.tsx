@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocale } from "next-intl/server";
 import { Unbounded, Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { brand } from "@/lib/brand";
@@ -48,14 +49,16 @@ export const metadata: Metadata = {
   // automatically via Next.js file conventions in src/app.
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       suppressHydrationWarning
       data-theme="dark"
       className={`${geist.variable} ${unbounded.variable} ${geistMono.variable} h-full antialiased`}
