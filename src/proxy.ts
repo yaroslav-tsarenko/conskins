@@ -3,9 +3,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { verifyTokenEdge } from "@/lib/token-edge";
 
+// next-intl still ships its handler as `createMiddleware`; only Next's file
+// convention was renamed (middleware -> proxy in Next 16).
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.endsWith("/avontshop.html")) {
