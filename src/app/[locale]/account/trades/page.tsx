@@ -2,7 +2,7 @@ import { Link } from "@/i18n/routing";
 import { SkinPrice } from "@/components/shared/SkinPrice";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { reconcilePurchaseFromProvider } from "@/lib/skins/delivery";
+import { reconcilePurchaseFromProvider, reconcileSkinPayment } from "@/lib/skins/delivery";
 import { Repeat, ArrowRight } from "lucide-react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -39,13 +39,20 @@ export default async function TradesPage() {
       }).catch(() => [])
     : [];
 
-  // Self-heal non-terminal purchases against the fulfilment provider so the
-  // buyer sees the latest Steam delivery status on load. No-op unless SIH is
-  // configured; terminal (completed/failed) rows are skipped inside reconcile.
+  // Self-heal non-terminal purchases against the payment & fulfilment providers so the
+  // buyer sees the latest Steam delivery status on load.
   const openPurchases = purchases.filter(
     (p) => p.status === "pending" || p.status === "trade_sent",
   );
   if (openPurchases.length > 0) {
+    await Promise.all(
+      openPurchases.map(async (p) => {
+        if (p.provider === "transfermit" && p.status === "pending") {
+          await reconcileSkinPayment(p.id);
+        }
+      }),
+    );
+
     const updated = await Promise.all(
       openPurchases.map(async (p) => [p.id, await reconcilePurchaseFromProvider(p.id)] as const),
     );

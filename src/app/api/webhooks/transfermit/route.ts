@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { applyLedger, markTopupFailed } from "@/lib/wallet";
 import { isCurrency, toEur, type Currency } from "@/lib/rates";
+import { activeDeliveryProvider } from "@/lib/skins/delivery";
 import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
@@ -89,6 +90,83 @@ export async function POST(request: NextRequest) {
         console.log(`[Transfermit Webhook] Wallet top-up marked failed for user ${tx.userId} (state: ${paymentState})`);
       } else {
         console.log(`[Transfermit Webhook] Wallet top-up state: ${paymentState}`);
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // Check if this is a direct skin purchase payment
+    const isSkinPurchase = referenceId?.startsWith("skin_purchase_") || referenceId?.startsWith("skin_");
+
+    if (isSkinPurchase) {
+      const purchaseId = referenceId.replace(/^skin_purchase_|^skin_/, "");
+      const purchase = await prisma.skinPurchase.findFirst({
+        where: {
+          OR: [
+            { id: purchaseId },
+            ...(paymentId ? [{ providerOrderId: paymentId }] : []),
+          ],
+        },
+        include: {
+          listing: true,
+          user: {
+            include: { steamAccount: true },
+          },
+        },
+      });
+
+      if (!purchase) {
+        console.error(`[Transfermit Webhook] SkinPurchase not found for referenceId=${referenceId}, paymentId=${paymentId}`);
+        return NextResponse.json({ error: "Skin purchase not found" }, { status: 404 });
+      }
+
+      if (paymentState === "COMPLETED") {
+        await prisma.skinListing.updateMany({
+          where: { id: purchase.listingId },
+          data: { status: "sold" },
+        });
+
+        if (purchase.status === "pending") {
+          await prisma.skinPurchase.update({
+            where: { id: purchase.id },
+            data: {
+              providerOrderId: paymentId || purchase.providerOrderId,
+              providerStatus: "paid",
+            },
+          });
+
+          const steam = purchase.user.steamAccount;
+          if (steam?.tradeUrl) {
+            void activeDeliveryProvider.deliver({
+              purchaseId: purchase.id,
+              tradeUrl: purchase.tradeUrl || steam.tradeUrl,
+              marketHashName: purchase.listing.marketHashName,
+              steamId64: steam.steamId64,
+              tradeToken: steam.tradeToken ?? "",
+              amount: Number(purchase.price),
+            });
+          }
+        }
+        console.log(`[Transfermit Webhook] Skin purchase ${purchase.id} completed & delivery dispatched`);
+      } else if (
+        paymentState === "DECLINED" ||
+        paymentState === "ERROR" ||
+        paymentState === "CANCELLED"
+      ) {
+        await prisma.skinPurchase.update({
+          where: { id: purchase.id },
+          data: {
+            status: "failed",
+            providerStatus: paymentState.toLowerCase(),
+            providerError: `Payment ${paymentState.toLowerCase()}`,
+          },
+        });
+
+        await prisma.skinListing.updateMany({
+          where: { id: purchase.listingId },
+          data: { status: "available" },
+        });
+        console.log(`[Transfermit Webhook] Skin purchase ${purchase.id} failed, listing restored to available`);
       }
 
       return NextResponse.json({ ok: true });
