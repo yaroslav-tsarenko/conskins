@@ -118,6 +118,7 @@ export async function POST(req: Request) {
           status: "pending",
           tradeUrl: steam.tradeUrl,
           provider: "balance",
+          paidWith: "balance",
         },
         select: { id: true, status: true, createdAt: true },
       });
@@ -185,6 +186,7 @@ export async function POST(req: Request) {
         status: "pending",
         tradeUrl: steam.tradeUrl,
         provider: "transfermit",
+        paidWith: "transfermit",
       },
       select: { id: true, status: true, createdAt: true },
     });

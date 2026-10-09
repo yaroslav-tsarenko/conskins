@@ -678,6 +678,14 @@ model SkinPurchase {
   providerOrderId String? // order id returned by the provider
   providerStatus  String? // raw provider status (created|processing|sent|finished|failed|penalized)
   providerError   String? // last provider error message, if any
+  // How the buyer paid: "balance" (site wallet, already debited) or
+  // "transfermit" (card). `provider` below tracks fulfilment, which overwrites
+  // itself with the fulfilment provider, so payment has to be recorded apart.
+  paidWith String?
+  // Steam trade offer the provider dispatched, so the buyer can open the exact
+  // offer instead of hunting through their offer list.
+  tradeOfferId     String?
+  tradeOfferSender String? // Steam persona of the bot that sent the offer
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 

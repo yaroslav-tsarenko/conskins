@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertCircle, Check, CreditCard, ExternalLink, Loader2, Lock, Wallet, X } from "lucide-react";
 import { useSkinPrice } from "@/components/shared/SkinPrice";
@@ -11,6 +11,17 @@ interface Fees {
   itemPrice: number;
   serviceFee: number;
   total: number;
+}
+
+interface Quote {
+  ok: true;
+  available: boolean;
+  currency: string;
+  fees: Fees;
+  balance: number;
+  shortfall: number;
+  balanceEur: number;
+  sufficient: boolean;
 }
 
 export function TradeSetupModal({
@@ -44,6 +55,36 @@ export function TradeSetupModal({
   const [soldOut, setSoldOut] = useState(false);
   const [done, setDone] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"direct" | "balance">("direct");
+  const [quote, setQuote] = useState<Quote | null>(null);
+  // Starts true: until the first quote lands we don't know the balance, so the
+  // balance option reads as "checking" rather than as ready to charge.
+  const [quoteLoading, setQuoteLoading] = useState(true);
+  // Bumped to re-read the balance after the server refuses a balance payment.
+  const [quoteNonce, setQuoteNonce] = useState(0);
+
+  // Site balance for this listing, straight from the server (wallet money is
+  // EUR, listings are priced in their own currency, so only the server can say
+  // whether the balance covers it). Paying from balance stays blocked until
+  // this says it is covered; the purchase route checks again anyway.
+  useEffect(() => {
+    if (!open || state !== "ready") return;
+    let cancelled = false;
+    fetch(`/api/skins/purchase/quote?listingId=${encodeURIComponent(listingId)}`, {
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (cancelled) return;
+        setQuote(json?.ok ? (json as Quote) : null);
+        setQuoteLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setQuoteLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, state, listingId, quoteNonce]);
 
   if (!open) return null;
 
@@ -84,6 +125,12 @@ export function TradeSetupModal({
   };
 
   const confirmPurchase = async () => {
+    if (paymentMethod === "balance" && quote && !quote.sufficient) {
+      setBuyError(
+        `Not enough balance — you're ${fmt(quote.shortfall)} short. Top up, or pay by card instead.`,
+      );
+      return;
+    }
     setBuying(true);
     setBuyError(null);
     try {
@@ -100,6 +147,11 @@ export function TradeSetupModal({
           setState("no-trade-url");
         } else if (json.code === "sold" || json.code === "not_found") {
           setSoldOut(true);
+        } else if (json.code === "insufficient_balance") {
+          // Balance moved under us (or another tab spent it) — re-read it so
+          // the panel below matches what the server just refused.
+          setQuoteLoading(true);
+          setQuoteNonce((n) => n + 1);
         }
         setBuyError(json.error ?? "Could not complete the purchase.");
         return;
@@ -115,6 +167,13 @@ export function TradeSetupModal({
       setBuying(false);
     }
   };
+
+  // Paying from balance is held back while the balance is known to be short, or
+  // while it is still unknown — the one thing we must not do is wave the buyer
+  // through to a charge that cannot settle.
+  const balanceBlocked =
+    paymentMethod === "balance" &&
+    (quoteLoading || (quote != null && !quote.sufficient));
 
   const step = state === "anon" || state === "no-steam" ? 1 : state === "no-trade-url" ? 2 : 3;
 
@@ -298,14 +357,43 @@ export function TradeSetupModal({
                     >
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text)]">
                         <Wallet className="h-3.5 w-3.5" />
-                        Wallet Balance
+                        Site Balance
                       </div>
                       <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">
-                        Pay with balance
+                        {quoteLoading && !quote
+                          ? "Checking balance…"
+                          : quote
+                            ? `You have ${fmt(quote.balance)}`
+                            : "Pay with balance"}
                       </span>
                     </button>
                   </div>
                 </div>
+
+                {paymentMethod === "balance" && quote && !quote.sufficient && (
+                  <div className="mt-3 rounded-lg border border-[color:var(--color-warning)]/40 bg-[color:var(--color-warning)]/10 px-3 py-2 text-sm text-[color:var(--color-warning)]">
+                    <p className="font-semibold">Not enough site balance</p>
+                    <p className="mt-0.5 text-xs">
+                      This skin costs {fmt(quote.fees.total)} and your balance is{" "}
+                      {fmt(quote.balance)} — {fmt(quote.shortfall)} short.
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold">
+                      <Link
+                        href={`/${locale}/account/wallet`}
+                        className="underline hover:no-underline"
+                      >
+                        Top up balance
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("direct")}
+                        className="underline hover:no-underline"
+                      >
+                        Or pay by card
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {buyError && (
                   <div className="mt-3 flex items-start gap-2 rounded-lg border border-[color:var(--color-danger)]/40 bg-[color:var(--color-danger)]/10 px-3 py-2 text-sm text-[color:var(--color-danger)]">
@@ -324,17 +412,23 @@ export function TradeSetupModal({
                 ) : (
                   <button
                     onClick={confirmPurchase}
-                    disabled={buying}
+                    disabled={buying || balanceBlocked}
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--color-primary)] px-5 py-3 text-sm font-bold text-[color:var(--color-primary-fg)] shadow-[var(--shadow-glow-volt)] disabled:opacity-50"
                   >
                     {buying && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {paymentMethod === "direct" ? `Pay ${price}` : `Pay from Balance ${price}`}
+                    {paymentMethod === "direct"
+                      ? `Pay ${price}`
+                      : quoteLoading
+                        ? "Checking balance…"
+                        : balanceBlocked
+                          ? "Balance too low"
+                          : `Pay from Balance ${price}`}
                   </button>
                 )}
                 <p className="mt-2 text-center text-xs text-[color:var(--color-text-tertiary)]">
                   {paymentMethod === "direct"
-                    ? "Redirecting to secure payment page."
-                    : "Skin is sent to your Steam via trade offer after payment."}
+                    ? "Redirecting to secure payment page. Nothing is taken from your site balance."
+                    : "Paid from your site balance. The skin is sent to your Steam via trade offer right after."}
                 </p>
               </>
             )}
