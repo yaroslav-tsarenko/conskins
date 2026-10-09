@@ -176,6 +176,85 @@ export const activeDeliveryProvider: TradeDeliveryProvider = isSihConfigured()
   ? new SihDeliveryProvider()
   : new StubDeliveryProvider();
 
+// Reconcile pending skin purchases that were created via Transfermit
+export async function reconcileSkinPayment(purchaseId: string): Promise<boolean> {
+  const purchase = await prisma.skinPurchase.findUnique({
+    where: { id: purchaseId },
+    include: {
+      listing: true,
+      user: {
+        include: { steamAccount: true },
+      },
+    },
+  });
+
+  if (!purchase || purchase.provider !== "transfermit" || !purchase.providerOrderId) {
+    return false;
+  }
+
+  if (purchase.status === "completed" || purchase.status === "failed" || purchase.status === "trade_sent") {
+    return true;
+  }
+
+  const { TransfermitAPI } = await import("@/lib/payments/transfermit");
+  const transfermit = new TransfermitAPI();
+  if (!transfermit.isConfigured()) return false;
+
+  try {
+    const statusRes = await transfermit.getPaymentStatus(purchase.providerOrderId);
+    const rawResult = (statusRes.result || statusRes) as Record<string, unknown>;
+    const paymentState = (rawResult.state as string) || "";
+
+    if (paymentState === "COMPLETED") {
+      await prisma.skinListing.updateMany({
+        where: { id: purchase.listingId },
+        data: { status: "sold" },
+      });
+
+      await prisma.skinPurchase.update({
+        where: { id: purchase.id },
+        data: { providerStatus: "paid" },
+      });
+
+      const steam = purchase.user.steamAccount;
+      if (steam?.tradeUrl) {
+        void activeDeliveryProvider.deliver({
+          purchaseId: purchase.id,
+          tradeUrl: purchase.tradeUrl || steam.tradeUrl,
+          marketHashName: purchase.listing.marketHashName,
+          steamId64: steam.steamId64,
+          tradeToken: steam.tradeToken ?? "",
+          amount: Number(purchase.price),
+        });
+      }
+      return true;
+    } else if (
+      paymentState === "DECLINED" ||
+      paymentState === "ERROR" ||
+      paymentState === "CANCELLED"
+    ) {
+      await prisma.skinPurchase.update({
+        where: { id: purchase.id },
+        data: {
+          status: "failed",
+          providerStatus: paymentState.toLowerCase(),
+          providerError: `Payment ${paymentState.toLowerCase()}`,
+        },
+      });
+
+      await prisma.skinListing.updateMany({
+        where: { id: purchase.listingId },
+        data: { status: "available" },
+      });
+      return false;
+    }
+  } catch (err) {
+    console.error(`[Reconcile Skin Payment] Failed for ${purchaseId}:`, err);
+  }
+
+  return false;
+}
+
 // ── Fee model ────────────────────────────────────────────────────────────
 // Buyers pay the listed price; buyer protection is included at no extra cost.
 // Keeping this in one place makes it trivial to introduce a real fee later.

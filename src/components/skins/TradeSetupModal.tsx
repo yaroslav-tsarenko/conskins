@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, ExternalLink, Loader2, Lock, X } from "lucide-react";
+import { AlertCircle, Check, CreditCard, ExternalLink, Loader2, Lock, Wallet, X } from "lucide-react";
 import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export type PurchaseState = "anon" | "no-steam" | "no-trade-url" | "ready";
@@ -43,6 +43,7 @@ export function TradeSetupModal({
   const [buyError, setBuyError] = useState<string | null>(null);
   const [soldOut, setSoldOut] = useState(false);
   const [done, setDone] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"direct" | "balance">("direct");
 
   if (!open) return null;
 
@@ -89,7 +90,7 @@ export function TradeSetupModal({
       const res = await fetch("/api/skins/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId }),
+        body: JSON.stringify({ listingId, paymentMethod }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -101,6 +102,10 @@ export function TradeSetupModal({
           setSoldOut(true);
         }
         setBuyError(json.error ?? "Could not complete the purchase.");
+        return;
+      }
+      if (json.redirectUrl) {
+        window.location.href = json.redirectUrl;
         return;
       }
       setDone(true);
@@ -261,6 +266,47 @@ export function TradeSetupModal({
                   </div>
                 </div>
 
+                {/* payment method */}
+                <div className="mt-3">
+                  <span className="text-xs font-semibold text-[color:var(--color-text-secondary)]">Payment method</span>
+                  <div className="mt-1.5 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("direct")}
+                      className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition ${
+                        paymentMethod === "direct"
+                          ? "border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-text)]"
+                          : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-text-tertiary)]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text)]">
+                        <CreditCard className="h-3.5 w-3.5" />
+                        Direct Payment
+                      </div>
+                      <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">
+                        Card & Instant Pay
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("balance")}
+                      className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition ${
+                        paymentMethod === "balance"
+                          ? "border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-text)]"
+                          : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-text-tertiary)]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text)]">
+                        <Wallet className="h-3.5 w-3.5" />
+                        Wallet Balance
+                      </div>
+                      <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">
+                        Pay with balance
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 {buyError && (
                   <div className="mt-3 flex items-start gap-2 rounded-lg border border-[color:var(--color-danger)]/40 bg-[color:var(--color-danger)]/10 px-3 py-2 text-sm text-[color:var(--color-danger)]">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -282,11 +328,13 @@ export function TradeSetupModal({
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--color-primary)] px-5 py-3 text-sm font-bold text-[color:var(--color-primary-fg)] shadow-[var(--shadow-glow-volt)] disabled:opacity-50"
                   >
                     {buying && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Pay {price}
+                    {paymentMethod === "direct" ? `Pay ${price}` : `Pay from Balance ${price}`}
                   </button>
                 )}
                 <p className="mt-2 text-center text-xs text-[color:var(--color-text-tertiary)]">
-                  Skin is sent to your Steam via trade offer after payment.
+                  {paymentMethod === "direct"
+                    ? "Redirecting to secure payment page."
+                    : "Skin is sent to your Steam via trade offer after payment."}
                 </p>
               </>
             )}
