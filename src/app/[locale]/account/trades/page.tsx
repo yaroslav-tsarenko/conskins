@@ -3,21 +3,9 @@ import { SkinPrice } from "@/components/shared/SkinPrice";
 import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reconcilePurchaseFromProvider, reconcileSkinPayment } from "@/lib/skins/delivery";
+import { tradeOfferUrl } from "@/lib/skins/sih";
+import { TradeStatus } from "@/components/account/TradeStatus";
 import { Repeat, ArrowRight } from "lucide-react";
-
-const STATUS_STYLES: Record<string, string> = {
-  pending: "bg-[color:var(--color-warning)]/15 text-[color:var(--color-warning)]",
-  trade_sent: "bg-[color:var(--color-accent)]/15 text-[color:var(--color-accent)]",
-  completed: "bg-[color:var(--color-success)]/15 text-[color:var(--color-success)]",
-  failed: "bg-[color:var(--color-danger)]/15 text-[color:var(--color-danger)]",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Processing",
-  trade_sent: "Trade offer sent",
-  completed: "Delivered",
-  failed: "Failed",
-};
 
 export default async function TradesPage() {
   const user = await getSessionUser();
@@ -100,54 +88,53 @@ export default async function TradesPage() {
             const skin = p.listing?.skin;
             const image = p.listing?.imageUrl ?? skin?.imageUrl ?? null;
             const name = skin?.name ?? p.listing?.marketHashName ?? `Order #${p.id.slice(0, 8)}`;
-            const row = (
-              <>
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
-                    style={skin ? { boxShadow: `inset 0 -2px 0 0 ${skin.rarityColor}` } : undefined}
-                  >
-                    {image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={image} alt={name} className="h-full w-full object-contain p-1" />
-                    ) : (
-                      <Repeat size={16} className="text-[color:var(--color-text-tertiary)]" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold text-[color:var(--color-text)]">
-                      {name}
-                    </div>
-                    <div className="font-mono text-[11px] text-[color:var(--color-text-tertiary)]">
-                      {new Date(p.createdAt).toLocaleDateString()} · #{p.id.slice(0, 8)}
-                    </div>
+            // The item details link to the skin page; the status block stays
+            // outside that link so its trade-offer link isn't nested in it.
+            const details = (
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <span
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-bg)]"
+                  style={skin ? { boxShadow: `inset 0 -2px 0 0 ${skin.rarityColor}` } : undefined}
+                >
+                  {image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={image} alt={name} className="h-full w-full object-contain p-1" />
+                  ) : (
+                    <Repeat size={16} className="text-[color:var(--color-text-tertiary)]" />
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-[color:var(--color-text)]">
+                    {name}
+                  </div>
+                  <div className="font-mono text-[11px] text-[color:var(--color-text-tertiary)]">
+                    {new Date(p.createdAt).toLocaleDateString()} · #{p.id.slice(0, 8)}
                   </div>
                 </div>
+              </div>
+            );
+            return (
+              <li
+                key={p.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] px-4 py-3 transition-colors hover:border-[color:var(--color-primary)]"
+              >
+                {skin ? (
+                  <Link href={`/skin/${skin.id}`} className="flex min-w-0 flex-1">
+                    {details}
+                  </Link>
+                ) : (
+                  details
+                )}
                 <div className="flex shrink-0 items-center gap-3">
                   <span className="font-mono text-sm font-bold tabular-nums text-[color:var(--color-text)]">
                     <SkinPrice usd={Number(p.price)} />
                   </span>
-                  <span
-                    className={`rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.12em] ${
-                      STATUS_STYLES[p.status] ?? STATUS_STYLES.pending
-                    }`}
-                  >
-                    {STATUS_LABELS[p.status] ?? p.status.replace("_", " ")}
-                  </span>
+                  <TradeStatus
+                    purchaseId={p.id}
+                    initialStatus={p.status}
+                    initialTradeOfferUrl={tradeOfferUrl(p.tradeOfferId)}
+                  />
                 </div>
-              </>
-            );
-            const className =
-              "flex items-center justify-between gap-3 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg-elevated)] px-4 py-3";
-            return (
-              <li key={p.id}>
-                {skin ? (
-                  <Link href={`/skin/${skin.id}`} className={`${className} transition-colors hover:border-[color:var(--color-primary)]`}>
-                    {row}
-                  </Link>
-                ) : (
-                  <div className={className}>{row}</div>
-                )}
               </li>
             );
           })}

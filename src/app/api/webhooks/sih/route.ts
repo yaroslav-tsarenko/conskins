@@ -49,6 +49,11 @@ export async function POST(request: NextRequest) {
     const rawStatus = typeof order.status === "string" ? order.status : undefined;
     const error =
       typeof order.error === "string" ? order.error : null;
+    // Trade offer details ride along with the status once SIH sends the offer.
+    const sender =
+      order.sender && typeof order.sender === "object"
+        ? (order.sender as { offerId?: number | string | null; nickname?: string | null })
+        : null;
 
     if (!rawStatus || (!customId && !providerOrderId)) {
       console.error("[SIH Webhook] Missing status or order identifier", order);
@@ -60,6 +65,7 @@ export async function POST(request: NextRequest) {
       providerOrderId,
       rawStatus,
       error,
+      sender,
     });
 
     if (!applied) {
