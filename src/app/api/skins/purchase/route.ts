@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import {
@@ -10,6 +11,48 @@ import { getBalanceEur, applyLedger } from "@/lib/wallet";
 import { isCurrency, toEur, type Currency } from "@/lib/rates";
 
 export const runtime = "nodejs";
+
+type PurchaseSeed = {
+  listingId: string;
+  userId: string;
+  price: Prisma.Decimal;
+  currency: string;
+  tradeUrl: string;
+  provider: string;
+  paidWith: string;
+};
+
+// SkinPurchase.listingId is unique, but failed payments / deliveries put the
+// listing back on sale while leaving their failed purchase row behind. A plain
+// create would then hit the unique constraint on every later attempt, so a
+// failed row is recycled for the new buyer instead.
+async function recordPurchase(seed: PurchaseSeed) {
+  const fresh = {
+    ...seed,
+    status: "pending",
+    providerOrderId: null,
+    providerStatus: null,
+    providerError: null,
+    tradeOfferId: null,
+    tradeOfferSender: null,
+  };
+  const select = { id: true, status: true, createdAt: true } as const;
+  const existing = await prisma.skinPurchase.findUnique({
+    where: { listingId: seed.listingId },
+    select: { id: true, status: true },
+  });
+  if (!existing) {
+    return prisma.skinPurchase.create({ data: fresh, select });
+  }
+  if (existing.status !== "failed") {
+    throw new Error(`Listing ${seed.listingId} already has a ${existing.status} purchase`);
+  }
+  return prisma.skinPurchase.update({
+    where: { id: existing.id },
+    data: { ...fresh, createdAt: new Date() },
+    select,
+  });
+}
 
 // Buy a specific listing. Supports:
 // 1. "direct" (default): creates a Transfermit payment link without debiting wallet balance.
@@ -109,18 +152,14 @@ export async function POST(req: Request) {
 
     let purchase;
     try {
-      purchase = await prisma.skinPurchase.create({
-        data: {
-          listingId: listing.id,
-          userId: user.id,
-          price: listing.price,
-          currency: listing.currency,
-          status: "pending",
-          tradeUrl: steam.tradeUrl,
-          provider: "balance",
-          paidWith: "balance",
-        },
-        select: { id: true, status: true, createdAt: true },
+      purchase = await recordPurchase({
+        listingId: listing.id,
+        userId: user.id,
+        price: listing.price,
+        currency: listing.currency,
+        tradeUrl: steam.tradeUrl,
+        provider: "balance",
+        paidWith: "balance",
       });
 
       await applyLedger({
@@ -131,7 +170,8 @@ export async function POST(req: Request) {
         sourceAmount: fees.total,
         sourceCurrency: listing.currency,
       });
-    } catch {
+    } catch (err) {
+      console.error("[Skin Purchase] Balance purchase failed:", err);
       await prisma.skinListing
         .updateMany({ where: { id: listingId }, data: { status: "available" } })
         .catch(() => {});
@@ -177,20 +217,17 @@ export async function POST(req: Request) {
 
   let purchase;
   try {
-    purchase = await prisma.skinPurchase.create({
-      data: {
-        listingId: listing.id,
-        userId: user.id,
-        price: listing.price,
-        currency: listing.currency,
-        status: "pending",
-        tradeUrl: steam.tradeUrl,
-        provider: "transfermit",
-        paidWith: "transfermit",
-      },
-      select: { id: true, status: true, createdAt: true },
+    purchase = await recordPurchase({
+      listingId: listing.id,
+      userId: user.id,
+      price: listing.price,
+      currency: listing.currency,
+      tradeUrl: steam.tradeUrl,
+      provider: "transfermit",
+      paidWith: "transfermit",
     });
-  } catch {
+  } catch (err) {
+    console.error("[Skin Purchase] Could not record purchase:", err);
     await prisma.skinListing
       .updateMany({ where: { id: listingId }, data: { status: "available" } })
       .catch(() => {});
