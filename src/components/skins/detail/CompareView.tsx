@@ -105,7 +105,7 @@ export function CompareView({ a, b }: { a: CompareSide; b: CompareSide }) {
                   href={`/skin/${skin.id}`}
                   className="mt-auto rounded-[var(--radius-md)] bg-[color:var(--color-primary)] py-2.5 text-center text-sm font-bold text-[color:var(--color-primary-fg)] shadow-[var(--shadow-glow-volt)] transition hover:brightness-110"
                 >
-                  View listing
+                  View item
                 </Link>
               </div>
             </div>

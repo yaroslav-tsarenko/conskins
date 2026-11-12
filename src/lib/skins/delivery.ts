@@ -5,11 +5,14 @@
 // `activeDeliveryProvider` and never need to know which one is active.
 
 import { prisma } from "@/lib/prisma";
+import { isCurrency, toEur, type Currency } from "@/lib/rates";
+import { refundEur } from "@/lib/wallet";
 import {
   createOrder,
   getOrder,
   isSihConfigured,
   mapSihStatus,
+  type SihOrderSender,
   type SihOrderStatus,
 } from "@/lib/skins/sih";
 
@@ -40,10 +43,37 @@ async function setStatus(purchaseId: string, status: PurchaseStatus) {
 
 // Simulates a Steam bot: sends the offer shortly after purchase, then marks it
 // completed as if the buyer accepted. Timers are fire-and-forget in dev.
+//
+// In production it refuses instead of simulating. Without SIH credentials no
+// trade offer is ever dispatched, and reporting such a purchase as "delivered"
+// is how a buyer ends up paying for a skin that never arrives — so the purchase
+// fails loudly, the listing goes back on sale and a balance payer is refunded.
 class StubDeliveryProvider implements TradeDeliveryProvider {
   name = "stub";
 
   async deliver(req: DeliveryRequest): Promise<void> {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        `[Delivery] No fulfilment provider configured (SIH_API_KEY missing) — failing purchase ${req.purchaseId}`,
+      );
+      await prisma.skinPurchase
+        .update({
+          where: { id: req.purchaseId },
+          data: {
+            status: "failed",
+            providerError:
+              "Skin delivery is temporarily unavailable. You have not been charged for an undelivered skin.",
+          },
+        })
+        .catch(() => {});
+      await releaseListingForPurchase(req.purchaseId);
+      await refundBalanceForFailedPurchase(
+        req.purchaseId,
+        "fulfilment provider not configured",
+      );
+      return;
+    }
+
     setTimeout(() => {
       void setStatus(req.purchaseId, "trade_sent");
       setTimeout(() => void setStatus(req.purchaseId, "completed"), 6000);
@@ -74,8 +104,13 @@ class SihDeliveryProvider implements TradeDeliveryProvider {
           data: { status: "failed", provider: "sih", providerError: result.error ?? "SIH order failed" },
         })
         .catch(() => {});
-      // Release the listing so a failed buy doesn't leave it stuck as sold.
+      // Release the listing so a failed buy doesn't leave it stuck as sold, and
+      // give a balance payer their money back.
       await releaseListingForPurchase(req.purchaseId);
+      await refundBalanceForFailedPurchase(
+        req.purchaseId,
+        result.error ?? "provider rejected the order",
+      );
       return;
     }
 
@@ -104,6 +139,43 @@ async function releaseListingForPurchase(purchaseId: string) {
   }
 }
 
+// A purchase paid from the site balance was debited the moment it was placed,
+// so a fulfilment failure has to put the money back — otherwise the buyer is
+// left with neither the skin nor the balance. Keyed by purchase id, so a
+// webhook and the poller both landing on the same failure refund once.
+async function refundBalanceForFailedPurchase(purchaseId: string, reason: string) {
+  const purchase = await prisma.skinPurchase
+    .findUnique({
+      where: { id: purchaseId },
+      select: {
+        id: true,
+        userId: true,
+        price: true,
+        currency: true,
+        paidWith: true,
+      },
+    })
+    .catch(() => null);
+
+  if (!purchase || purchase.paidWith !== "balance") return;
+
+  const currency: Currency = isCurrency(purchase.currency) ? purchase.currency : "USD";
+  try {
+    const amountEur = await toEur(Number(purchase.price), currency);
+    await refundEur({
+      userId: purchase.userId,
+      amountEur,
+      description: `Refund: skin delivery failed (${reason})`,
+      provider: "sih",
+      providerRef: `refund_purchase_${purchase.id}`,
+      sourceAmount: Number(purchase.price),
+      sourceCurrency: currency,
+    });
+  } catch (err) {
+    console.error(`[Refund] Failed to refund purchase ${purchase.id}:`, err);
+  }
+}
+
 // Apply a raw SIH status to a purchase (by our id or the provider order id).
 // Shared by the webhook handler and the reconcile poller so both stay in sync.
 export async function applyProviderStatus(params: {
@@ -111,6 +183,8 @@ export async function applyProviderStatus(params: {
   providerOrderId?: string;
   rawStatus: SihOrderStatus | string;
   error?: string | null;
+  // Trade offer SIH reports alongside the status, once it has dispatched one.
+  sender?: SihOrderSender | null;
 }): Promise<boolean> {
   const where = params.purchaseId
     ? { id: params.purchaseId }
@@ -123,6 +197,9 @@ export async function applyProviderStatus(params: {
   const purchase = await prisma.skinPurchase.findFirst({ where, select: { id: true, listingId: true } }).catch(() => null);
   if (!purchase) return false;
 
+  const offerId =
+    params.sender?.offerId != null ? String(params.sender.offerId) : null;
+
   await prisma.skinPurchase
     .update({
       where: { id: purchase.id },
@@ -130,6 +207,11 @@ export async function applyProviderStatus(params: {
         status: mapped,
         providerStatus: String(params.rawStatus),
         providerError: params.error ?? null,
+        // Keep an offer we already know about if this update omits it.
+        ...(offerId ? { tradeOfferId: offerId } : {}),
+        ...(params.sender?.nickname
+          ? { tradeOfferSender: params.sender.nickname }
+          : {}),
       },
     })
     .catch(() => {});
@@ -140,6 +222,10 @@ export async function applyProviderStatus(params: {
     await prisma.skinListing
       .updateMany({ where: { id: purchase.listingId }, data: { status: "available" } })
       .catch(() => {});
+    await refundBalanceForFailedPurchase(
+      purchase.id,
+      params.error ?? String(params.rawStatus),
+    );
   }
   return true;
 }
@@ -168,6 +254,7 @@ export async function reconcilePurchaseFromProvider(purchaseId: string): Promise
     purchaseId: purchase.id,
     rawStatus: order.status,
     error: order.error ?? null,
+    sender: order.sender ?? null,
   });
   return mapSihStatus(order.status);
 }
@@ -275,13 +362,4 @@ export function computeFees(itemPrice: number): FeeBreakdown {
 
 function round2(n: number): number {
   return Math.round((n + Number.EPSILON) * 100) / 100;
-}
-
-// Stubbed wallet balance. No wallet model exists yet, so we grant a large
-// simulated balance — enough for the golden path — while keeping the
-// insufficient-funds branch reachable for very high-value items.
-export const STUB_WALLET_BALANCE = 1_000_000;
-
-export function getWalletBalance(): number {
-  return STUB_WALLET_BALANCE;
 }

@@ -41,14 +41,14 @@
     "heroSale": "Biggest discounts",
     "heroSaleSubtitle": "The best value skins on the market right now — while they last.",
     "heroShopSale": "Shop deals",
-    "heroNew": "New listings",
+    "heroNew": "New items",
     "heroNewSubtitle": "Fresh drops across every collection — updated live from the order book.",
     "heroExplore": "Explore",
     "featured": "Featured Skins",
-    "newArrivals": "New Listings",
+    "newArrivals": "New Items",
     "categories": "Browse by Category",
     "newsletter": "Stay Updated",
-    "newsletterSubtitle": "Subscribe for price drops, market moves and new listings",
+    "newsletterSubtitle": "Subscribe for price drops, market moves and new items",
     "newsletterCta": "Subscribe",
     "newsletterPlaceholder": "Enter your email",
     "promoFreeShipping": "Instant Steam trades",
@@ -290,7 +290,7 @@
     "links": {
       "allSkins": {
         "label": "All skins",
-        "description": "The full market, every listing"
+        "description": "The full catalogue, every item"
       },
       "knives": {
         "label": "Knives",
@@ -325,7 +325,7 @@
         "description": "Biggest discounts vs Steam"
       },
       "newListings": {
-        "label": "New listings",
+        "label": "New items",
         "description": "Fresh on the market"
       },
       "calculator": {

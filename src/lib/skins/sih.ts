@@ -26,6 +26,15 @@ export function isSihConfigured(): boolean {
   return apiKey() !== null;
 }
 
+// The Steam trade offer SIH dispatched for an order. Present once the order
+// reaches `sent`; fields are optional because SIH fills them in progressively.
+export interface SihOrderSender {
+  offerId?: number | string | null;
+  timeout?: number | null;
+  nickname?: string | null;
+  avatar?: string | null;
+}
+
 export interface SihOrder {
   id: number | string;
   customId?: string;
@@ -35,6 +44,7 @@ export interface SihOrder {
   expectedAmount?: number;
   status: SihOrderStatus;
   error?: string | null;
+  sender?: SihOrderSender | null;
   created?: number;
   updated?: number;
 }
@@ -257,4 +267,13 @@ export function mapSihStatus(status: SihOrderStatus | string): "pending" | "trad
     default:
       return "pending";
   }
+}
+
+// Link to an incoming Steam trade offer by id, so the buyer can open the exact
+// offer SIH sent. Returns null while SIH has not reported an offer id yet.
+export function tradeOfferUrl(offerId: string | number | null | undefined): string | null {
+  if (offerId === null || offerId === undefined) return null;
+  const id = String(offerId).trim();
+  if (!/^\d+$/.test(id)) return null;
+  return `https://steamcommunity.com/tradeoffer/${id}/`;
 }

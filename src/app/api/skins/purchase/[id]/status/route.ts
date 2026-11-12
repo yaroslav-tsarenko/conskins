@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 import { reconcilePurchaseFromProvider } from "@/lib/skins/delivery";
+import { tradeOfferUrl } from "@/lib/skins/sih";
 
 export const runtime = "nodejs";
 
@@ -27,5 +28,21 @@ export async function GET(
   }
 
   const reconciled = await reconcilePurchaseFromProvider(purchase.id);
-  return NextResponse.json({ id: purchase.id, status: reconciled ?? purchase.status });
+
+  // Re-read after reconciliation: that is when the trade offer id lands, and
+  // the buyer's "My Trades" row needs it to link straight to the offer.
+  const fresh = await prisma.skinPurchase.findUnique({
+    where: { id: purchase.id },
+    select: { status: true, tradeOfferId: true, tradeOfferSender: true, providerError: true },
+  });
+
+  const status = reconciled ?? fresh?.status ?? purchase.status;
+  return NextResponse.json({
+    id: purchase.id,
+    status,
+    tradeOfferUrl: tradeOfferUrl(fresh?.tradeOfferId ?? null),
+    tradeOfferSender: fresh?.tradeOfferSender ?? null,
+    error: fresh?.providerError ?? null,
+    open: status === "pending" || status === "trade_sent",
+  });
 }

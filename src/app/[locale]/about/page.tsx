@@ -15,11 +15,11 @@ import {
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: `Learn about ${brand.displayName} — a modern CS2 skins marketplace built for fast, fair, transparent trading.`,
+  description: `Learn about ${brand.displayName} — a modern CS2 skins store built for fast, fair, transparent trading.`,
 };
 
 const stats = [
-  { value: "10k+", label: "Skins listed", Icon: BarChart3 },
+  { value: "10k+", label: "Skins available", Icon: BarChart3 },
   { value: "< 60s", label: "Median delivery", Icon: Gauge },
   { value: "24/7", label: "Automated trading", Icon: Zap },
   { value: "100%", label: "Buyer protection", Icon: ShieldCheck },
@@ -39,7 +39,7 @@ const values = [
   {
     Icon: BarChart3,
     title: "Radical transparency",
-    body: "Live float, pattern index and cross-market pricing on every listing. You always see exactly what you're buying.",
+    body: "Live float, pattern index and cross-market pricing on every item. You always see exactly what you're buying.",
   },
   {
     Icon: Repeat,
@@ -111,7 +111,7 @@ export default function AboutPage() {
               and the constant worry of getting scammed on peer-to-peer trades.
             </p>
             <p>
-              So we built a marketplace around three ideas: show everything, move
+              So we built a store around three ideas: show everything, move
               fast, and protect every trade. Prices, float and pattern are on
               the table before you commit. Our bot handles delivery automatically.
               And if an order can&apos;t be delivered, your balance is restored.
@@ -200,7 +200,7 @@ export default function AboutPage() {
           Ready to find your next skin?
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm opacity-90 sm:text-base">
-          Thousands of listings with live float and cross-market pricing, ready
+          Thousands of items with live float and cross-market pricing, ready
           to trade.
         </p>
         <Link
