@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { creditEur, WalletError } from "@/lib/wallet";
 import { activeTopupGateway } from "@/lib/payments/topup-gateway";
+import { isTransfermitPaymentMethod, type TransfermitPaymentMethod } from "@/lib/payments/transfermit";
 import { isCurrency, toEur, type Currency } from "@/lib/rates";
 
 export const runtime = "nodejs";
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { amount?: number; currency?: string };
+  let body: { amount?: number; currency?: string; paymentMethod?: string };
   try {
     body = await req.json();
   } catch {
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
 
   const amount = Number(body.amount);
   const currency: Currency = isCurrency(body.currency) ? body.currency : "EUR";
+  const paymentMethod: TransfermitPaymentMethod = isTransfermitPaymentMethod(body.paymentMethod)
+    ? body.paymentMethod
+    : "BASIC_CARD";
 
   if (!Number.isFinite(amount) || amount < MIN_AMOUNT) {
     return NextResponse.json(
@@ -56,6 +60,7 @@ export async function POST(req: Request) {
       userId: user.id,
       amount,
       currency,
+      paymentMethod,
       customer: {
         referenceId: user.id,
         email: user.email || `${user.steamAccount?.steamId64 || user.id}@conskins.com`,

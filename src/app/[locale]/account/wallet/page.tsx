@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/routing";
-import { Wallet, Plus, Check, Loader2, ArrowDownLeft, ArrowUpRight, AlertCircle, Clock } from "lucide-react";
+import { Wallet, Plus, Check, Loader2, ArrowDownLeft, ArrowUpRight, AlertCircle, Clock, CreditCard, Smartphone } from "lucide-react";
 import { useCurrency } from "@/providers/CurrencyProvider";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -41,6 +41,7 @@ function WalletContent() {
 
   const [selected, setSelected] = useState<number | "custom">(PACKS[1]);
   const [custom, setCustom] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"BASIC_CARD" | "APPLEPAYTOKEN">("BASIC_CARD");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
@@ -148,7 +149,7 @@ function WalletContent() {
       const res = await fetch("/api/wallet/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, currency }),
+        body: JSON.stringify({ amount, currency, paymentMethod }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -274,6 +275,40 @@ function WalletContent() {
                 className="w-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-bg)] py-3 pl-7 pr-3 font-mono text-sm text-[color:var(--color-text)] outline-none focus:border-[color:var(--color-primary)]"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="mb-1.5 block text-xs font-semibold text-[color:var(--color-text-secondary)]">
+            Payment method
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                { id: "BASIC_CARD", label: "Card", sub: "Visa / Mastercard", icon: CreditCard },
+                { id: "APPLEPAYTOKEN", label: "Apple Pay", sub: "Express Pay", icon: Smartphone },
+              ] as const
+            ).map(({ id, label, sub, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setPaymentMethod(id);
+                  setError(null);
+                }}
+                className={`flex flex-col items-start rounded-xl border p-3 text-left transition-colors ${
+                  paymentMethod === id
+                    ? "border-[color:var(--color-primary)] bg-[color:var(--color-primary-tint)] text-[color:var(--color-text)]"
+                    : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-primary)]/50"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[color:var(--color-text)]">
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </div>
+                <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">{sub}</span>
+              </button>
+            ))}
           </div>
         </div>
 

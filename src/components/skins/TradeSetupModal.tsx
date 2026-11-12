@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, CreditCard, ExternalLink, Loader2, Lock, Wallet, X } from "lucide-react";
+import { AlertCircle, Check, CreditCard, ExternalLink, Loader2, Lock, Smartphone, Wallet, X } from "lucide-react";
 import { useSkinPrice } from "@/components/shared/SkinPrice";
 
 export type PurchaseState = "anon" | "no-steam" | "no-trade-url" | "ready";
@@ -54,7 +54,7 @@ export function TradeSetupModal({
   const [buyError, setBuyError] = useState<string | null>(null);
   const [soldOut, setSoldOut] = useState(false);
   const [done, setDone] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"direct" | "balance">("direct");
+  const [paymentMethod, setPaymentMethod] = useState<"BASIC_CARD" | "APPLEPAYTOKEN" | "balance">("BASIC_CARD");
   const [quote, setQuote] = useState<Quote | null>(null);
   // Starts true: until the first quote lands we don't know the balance, so the
   // balance option reads as "checking" rather than as ready to charge.
@@ -328,22 +328,39 @@ export function TradeSetupModal({
                 {/* payment method */}
                 <div className="mt-3">
                   <span className="text-xs font-semibold text-[color:var(--color-text-secondary)]">Payment method</span>
-                  <div className="mt-1.5 grid grid-cols-2 gap-2">
+                  <div className="mt-1.5 grid grid-cols-3 gap-2">
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod("direct")}
+                      onClick={() => setPaymentMethod("BASIC_CARD")}
                       className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition ${
-                        paymentMethod === "direct"
+                        paymentMethod === "BASIC_CARD"
                           ? "border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-text)]"
                           : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-text-tertiary)]"
                       }`}
                     >
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text)]">
                         <CreditCard className="h-3.5 w-3.5" />
-                        Direct Payment
+                        Card
                       </div>
                       <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">
-                        Card & Instant Pay
+                        Visa / MC
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("APPLEPAYTOKEN")}
+                      className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition ${
+                        paymentMethod === "APPLEPAYTOKEN"
+                          ? "border-[color:var(--color-primary)] bg-[color:var(--color-primary)]/10 text-[color:var(--color-text)]"
+                          : "border-[color:var(--color-border)] bg-[color:var(--color-bg)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-text-tertiary)]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--color-text)]">
+                        <Smartphone className="h-3.5 w-3.5" />
+                        Apple Pay
+                      </div>
+                      <span className="mt-0.5 text-[11px] text-[color:var(--color-text-tertiary)]">
+                        Express Pay
                       </span>
                     </button>
                     <button
@@ -386,7 +403,7 @@ export function TradeSetupModal({
                       </Link>
                       <button
                         type="button"
-                        onClick={() => setPaymentMethod("direct")}
+                        onClick={() => setPaymentMethod("BASIC_CARD")}
                         className="underline hover:no-underline"
                       >
                         Or pay by card
@@ -416,7 +433,7 @@ export function TradeSetupModal({
                     className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--color-primary)] px-5 py-3 text-sm font-bold text-[color:var(--color-primary-fg)] shadow-[var(--shadow-glow-volt)] disabled:opacity-50"
                   >
                     {buying && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {paymentMethod === "direct"
+                    {paymentMethod !== "balance"
                       ? `Pay ${price}`
                       : quoteLoading
                         ? "Checking balance…"
@@ -426,7 +443,7 @@ export function TradeSetupModal({
                   </button>
                 )}
                 <p className="mt-2 text-center text-xs text-[color:var(--color-text-tertiary)]">
-                  {paymentMethod === "direct"
+                  {paymentMethod !== "balance"
                     ? "Redirecting to secure payment page. Nothing is taken from your site balance."
                     : "Paid from your site balance. The skin is sent to your Steam via trade offer right after."}
                 </p>
