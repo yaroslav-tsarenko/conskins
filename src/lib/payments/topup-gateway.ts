@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWallet } from "@/lib/wallet";
-import { TransfermitAPI } from "@/lib/payments/transfermit";
+import { TransfermitAPI, type TransfermitPaymentMethod } from "@/lib/payments/transfermit";
 
 export type TopupIntent = {
   userId: string;
   // Amount + currency the user chose to pay (pre-conversion to EUR).
   amount: number;
   currency: string;
+  paymentMethod?: TransfermitPaymentMethod;
   customer?: {
     referenceId?: string;
     email?: string;
@@ -91,6 +92,7 @@ export class TransfermitTopupGateway implements TopupGateway {
       currency: intent.currency,
       referenceId,
       description: `Wallet Top-up ${intent.amount} ${intent.currency}`,
+      paymentMethod: intent.paymentMethod || "BASIC_CARD",
       customer: {
         referenceId: intent.customer?.referenceId || intent.userId,
         email: intent.customer?.email || `${intent.userId}@conskins.com`,

@@ -16,12 +16,23 @@ export interface CreatePaymentBillingAddress {
   state?: string;
 }
 
+export type TransfermitPaymentMethod = "BASIC_CARD" | "APPLEPAYTOKEN";
+
+export const TRANSFERMIT_PAYMENT_METHODS: readonly TransfermitPaymentMethod[] = [
+  "BASIC_CARD",
+  "APPLEPAYTOKEN",
+] as const;
+
+export function isTransfermitPaymentMethod(val: unknown): val is TransfermitPaymentMethod {
+  return typeof val === "string" && (TRANSFERMIT_PAYMENT_METHODS as readonly string[]).includes(val);
+}
+
 export interface CreatePaymentPayload {
   amount: number;
   currency: string;
   referenceId: string;
   description?: string;
-  paymentMethod?: string;
+  paymentMethod?: TransfermitPaymentMethod | string;
   customer: CreatePaymentCustomer;
   billingAddress?: Partial<CreatePaymentBillingAddress>;
   returnUrl: string;

@@ -5,7 +5,11 @@ import {
   activeDeliveryProvider,
   computeFees,
 } from "@/lib/skins/delivery";
-import { TransfermitAPI } from "@/lib/payments/transfermit";
+import {
+  TransfermitAPI,
+  isTransfermitPaymentMethod,
+  type TransfermitPaymentMethod,
+} from "@/lib/payments/transfermit";
 import { getBalanceEur, applyLedger } from "@/lib/wallet";
 import { isCurrency, toEur, type Currency } from "@/lib/rates";
 
@@ -37,7 +41,11 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { listingId?: string; paymentMethod?: "direct" | "balance" };
+  let body: {
+    listingId?: string;
+    paymentMethod?: "direct" | "balance" | TransfermitPaymentMethod;
+    gatewayMethod?: TransfermitPaymentMethod;
+  };
   try {
     body = await req.json();
   } catch {
@@ -226,6 +234,12 @@ export async function POST(req: Request) {
   const returnUrl = `${baseUrl}/account/trades?status=return&purchaseId=${purchase.id}&ref=${referenceId}`;
   const webhookUrl = `${baseUrl}/api/webhooks/transfermit`;
 
+  const transfermitMethod: TransfermitPaymentMethod = isTransfermitPaymentMethod(body.gatewayMethod)
+    ? body.gatewayMethod
+    : isTransfermitPaymentMethod(body.paymentMethod)
+      ? body.paymentMethod
+      : "BASIC_CARD";
+
   const transfermit = new TransfermitAPI();
   try {
     const paymentRes = await transfermit.createPayment({
@@ -233,6 +247,7 @@ export async function POST(req: Request) {
       currency: listing.currency,
       referenceId,
       description: `Purchase: ${listing.marketHashName}`,
+      paymentMethod: transfermitMethod,
       customer: {
         referenceId: user.id,
         email: user.email || `${steam.steamId64 || user.id}@conskins.com`,
